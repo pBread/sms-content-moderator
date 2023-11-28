@@ -9,7 +9,6 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 )
@@ -32,8 +31,7 @@ func ValidateTwilioRequest(req *http.Request) (bool, error) {
 func sign(req *http.Request) (string, error) {
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		fmt.Println("Error:", "No request body. Hint: This app only supports POST requests.")
-		return "", errors.New("No request body")
+		return "", errors.New("No request body. Hint: This app only supports POST requests.")
 	}
 
 	// Create the base string to sign, which is the full URL of the request
