@@ -43,9 +43,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	go func() {
 		defer wg.Done()
 		checkTier1(&mutex, msg, &tier0Failed, &tier1Failed)
-
 	}()
-
 }
 
 func checkTier0(mutex *sync.Mutex, msg string, tier0Failed *bool) {
