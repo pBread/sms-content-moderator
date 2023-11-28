@@ -25,7 +25,6 @@ func ValidateTwilioRequest(req *http.Request) (bool, error) {
 
 	// Compare the calculated signature with the expected signature
 	return hmac.Equal([]byte(signatureGiven), []byte(signatureExpected)), nil
-
 }
 
 func sign(req *http.Request) (string, error) {
@@ -45,5 +44,4 @@ func sign(req *http.Request) (string, error) {
 	hasher.Write([]byte(dataToSign))
 
 	return hex.EncodeToString(hasher.Sum(nil)), nil
-
 }
