@@ -9,17 +9,33 @@ import (
 	"github.com/pbread/hoot-filter/internal/blacklist"
 )
 
-// func main() {
-// 	http.HandleFunc("/webhook", handler)
-// 	http.ListenAndServe(":8080", nil)
-// }
+var tier0Fails = [...]string{
+	"very bad message",
+	"this message is very bad",
+	"  very bad   with whitespace",
+	"v e r y b a d",
+}
 
 func main() {
 	bl := blacklist.GetBlackList()
 
-	fmt.Printf("bl: %v\n", bl)
+	for _, msg := range tier0Fails {
+		result := bl.CheckTier0(msg)
+
+		if result {
+			println("\tPassed: " + msg)
+		} else {
+			println("\tFailed: " + msg)
+
+		}
+	}
 
 }
+
+// func main() {
+// 	http.HandleFunc("/webhook", handler)
+// 	http.ListenAndServe(":8080", nil)
+// }
 
 func handler(w http.ResponseWriter, req *http.Request) {
 	isSignatureValid, err := auth.ValidateTwilioRequest(req)

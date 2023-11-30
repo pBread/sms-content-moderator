@@ -2,6 +2,7 @@ package blacklist
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -21,14 +22,18 @@ const (
 )
 
 type Blacklist struct {
-	tier0 []*regexp.Regexp
-	tier1 []*regexp.Regexp
+	Tier0 []*regexp.Regexp
+	Tier1 []*regexp.Regexp
 }
 
 var (
 	instance *Blacklist
 	once     sync.Once
 )
+
+/****************************************************
+ Get Blacklist
+****************************************************/
 
 // blacklist is CSV style array w/columns [phrase, tier (0 | 1), type ("regex" | "string")]
 func GetBlackList() *Blacklist {
@@ -42,8 +47,8 @@ func GetBlackList() *Blacklist {
 
 func buildBlacklist(entries [][]string) *Blacklist {
 	blacklist := Blacklist{
-		tier0: []*regexp.Regexp{},
-		tier1: []*regexp.Regexp{},
+		Tier0: []*regexp.Regexp{},
+		Tier1: []*regexp.Regexp{},
 	}
 
 	// string entries are evaluated as one large regular expression
@@ -51,6 +56,10 @@ func buildBlacklist(entries [][]string) *Blacklist {
 	tier1Strings := []string{}
 
 	for i, entry := range entries {
+		// skip header row
+		if i == 0 {
+			continue
+		}
 		checkEntry(i, entry)
 
 		content := entry[0]
@@ -60,9 +69,9 @@ func buildBlacklist(entries [][]string) *Blacklist {
 		if mtype == RegexType {
 			re := regexp.MustCompile(entry[0])
 			if tier == 0 {
-				blacklist.tier0 = append(blacklist.tier0, re)
+				blacklist.Tier0 = append(blacklist.Tier0, re)
 			} else if tier == 1 {
-				blacklist.tier1 = append(blacklist.tier1, re)
+				blacklist.Tier1 = append(blacklist.Tier1, re)
 			}
 		} else if mtype == StringType {
 			if tier == 0 {
@@ -76,8 +85,8 @@ func buildBlacklist(entries [][]string) *Blacklist {
 	tier0StringsReg := regexp.MustCompile("(?i)\\b(" + strings.Join(tier0Strings, "|") + ")\\b")
 	tier1StringsReg := regexp.MustCompile("(?i)\\b(" + strings.Join(tier1Strings, "|") + ")\\b")
 
-	blacklist.tier0 = append([]*regexp.Regexp{tier0StringsReg}, blacklist.tier0...)
-	blacklist.tier1 = append([]*regexp.Regexp{tier1StringsReg}, blacklist.tier1...)
+	blacklist.Tier0 = append([]*regexp.Regexp{tier0StringsReg}, blacklist.Tier0...)
+	blacklist.Tier1 = append([]*regexp.Regexp{tier1StringsReg}, blacklist.Tier1...)
 
 	return &blacklist
 }
@@ -116,4 +125,35 @@ func readCSV(path string) ([][]string, error) {
 	}
 
 	return entries, nil
+}
+
+/****************************************************
+ Review Message
+****************************************************/
+
+func (bl *Blacklist) CheckTier0(msg string) bool {
+	isOK := true
+
+	for i, re := range bl.Tier0 {
+		fmt.Sprintln("regex " + string(i) + " " + msg)
+		if re.MatchString(msg) {
+			isOK = false
+			break
+		}
+	}
+
+	return isOK
+}
+
+func (bl *Blacklist) CheckTier1(msg string) bool {
+	isOK := false
+
+	for _, re := range bl.Tier1 {
+		if re.MatchString(msg) {
+			isOK = true
+			break
+		}
+	}
+
+	return isOK
 }
