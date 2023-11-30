@@ -1,0 +1,5 @@
+phrase,tier,type
+very bad,0,string
+maybe bad,1,string
+bad very,0,string
+bad maybe,1,string

@@ -9,8 +9,14 @@ import (
 )
 
 func main() {
+	tester()
+
 	http.HandleFunc("/webhook", handler)
 	http.ListenAndServe(":8080", nil)
+}
+
+func tester() {
+
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
