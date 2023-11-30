@@ -6,16 +6,18 @@ import (
 	"sync"
 
 	auth "github.com/pbread/hoot-filter/internal/auth"
+	"github.com/pbread/hoot-filter/internal/blacklist"
 )
 
+// func main() {
+// 	http.HandleFunc("/webhook", handler)
+// 	http.ListenAndServe(":8080", nil)
+// }
+
 func main() {
-	tester()
+	bl := blacklist.GetBlackList()
 
-	http.HandleFunc("/webhook", handler)
-	http.ListenAndServe(":8080", nil)
-}
-
-func tester() {
+	fmt.Printf("bl: %v\n", bl)
 
 }
 

@@ -63,16 +63,12 @@ func buildBlacklist(entries [][]string) *Blacklist {
 				blacklist.tier0 = append(blacklist.tier0, re)
 			} else if tier == 1 {
 				blacklist.tier1 = append(blacklist.tier1, re)
-			} else {
-				rowPanic(i, "Unknown issue")
 			}
 		} else if mtype == StringType {
 			if tier == 0 {
 				tier0Strings = append(tier0Strings, content)
 			} else if tier == 1 {
 				tier1Strings = append(tier1Strings, content)
-			} else {
-				rowPanic(i, "Unknown issue")
 			}
 		}
 	}
