@@ -8,16 +8,28 @@ import (
 	"os"
 	"sync"
 
+	"github.com/joho/godotenv"
+
 	"github.com/pbread/hoot-filter/internal/blacklist"
 )
 
+var (
+	bl   *blacklist.Blacklist
+	once sync.Once
+)
+
 func main() {
+	once.Do(func() {
+		godotenv.Load()
+		checkEnv()
+
+		loadBlacklist()
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-
-	initialize()
 
 	http.HandleFunc("/webhook", handler)
 	// http.HandleFunc("/webhook", auth.TwilioAuthMiddleware(handler))
@@ -29,39 +41,31 @@ func main() {
 	}
 }
 
-var (
-	bl   *blacklist.Blacklist
-	once sync.Once
-)
+func checkEnv() {
+	twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
+	if len(twilioAuthToken) != 32 {
+		panic("Invalid env variable: TWILIO_AUTH_TOKEN")
+	}
+}
 
-func initialize() {
-	once.Do(func() {
-		file, err := os.Open("config/blacklist.csv")
-		if err != nil {
-			panic("Error loading blacklist CSV: " + err.Error())
-		}
+func loadBlacklist() {
+	file, err := os.Open("config/blacklist.csv")
+	if err != nil {
+		panic("Error loading blacklist CSV: " + err.Error())
+	}
 
-		reader := csv.NewReader(file)
-		entries, err := reader.ReadAll()
-		if err != nil {
-			panic("Error reading blacklist CSV: " + err.Error())
-		}
+	reader := csv.NewReader(file)
+	entries, err := reader.ReadAll()
+	if err != nil {
+		panic("Error reading blacklist CSV: " + err.Error())
+	}
 
-		bl = blacklist.MakeBlacklist(entries)
-		fmt.Println("blacklist initialized")
-	})
+	bl = blacklist.MakeBlacklist(entries)
+	fmt.Println("blacklist initialized")
 
-	once.Do(func() {
-		twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
-		if len(twilioAuthToken) != 32 {
-			panic("Invalid env variable: TWILIO_AUTH_TOKEN")
-		}
-	})
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
-	initialize()
-
 	fmt.Println("request")
 	if err := req.ParseForm(); err != nil {
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
