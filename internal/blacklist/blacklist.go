@@ -131,7 +131,6 @@ func readCSV(path string) ([][]string, error) {
 	return entries, nil
 }
 
-/** Review Message ******************************/
 func (bl *Blacklist) CheckTier0(msg string) bool {
 	isOK := true
 
