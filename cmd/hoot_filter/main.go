@@ -36,24 +36,28 @@ func main() {
 	bl := blacklist.GetBlackList()
 
 	for idx, msg := range tier0Fails {
-		const runs = 1000
-		var totalDuration time.Duration
-
-		for i := 0; i < runs; i++ {
-			startTime := time.Now()
-			_ = bl.CheckTier0(msg)
-			totalDuration += time.Since(startTime)
-		}
-
-		avgDuration := totalDuration / runs
-		result := bl.CheckTier0(msg)
-
-		resultStr := "failed"
-		if result {
-			resultStr = "passed\t"
-		}
-		fmt.Printf("Msg %d\t %q\t Avg time: %v\t Result: %s\n", idx, firstN(msg, 25), avgDuration, resultStr)
+		syncEvalTier0(bl, idx, msg)
 	}
+}
+
+func syncEvalTier0(bl *blacklist.Blacklist, idx int, msg string) {
+	const runs = 1000
+	var totalDuration time.Duration
+
+	for i := 0; i < runs; i++ {
+		startTime := time.Now()
+		_ = bl.SyncCheckTier0(msg)
+		totalDuration += time.Since(startTime)
+	}
+
+	avgDuration := totalDuration.Nanoseconds() / runs
+	result := bl.SyncCheckTier0(msg)
+
+	resultStr := "failed"
+	if result {
+		resultStr = "passed\t"
+	}
+	fmt.Printf("Msg\t %d\t %q\t Avg time: %v\t Result: %s\n", idx, firstN(msg, 25), avgDuration, resultStr)
 }
 
 func firstN(s string, n int) string {

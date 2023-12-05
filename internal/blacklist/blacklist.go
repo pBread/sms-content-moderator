@@ -2,7 +2,6 @@ package blacklist
 
 import (
 	"encoding/csv"
-	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -94,7 +93,6 @@ func buildBlacklist(entries [][]string) *Blacklist {
 	blacklist.Tier1 = append([]*regexp.Regexp{tier1StringsReg}, blacklist.Tier1...)
 
 	return &blacklist
-
 }
 
 // func buildBlacklist0(entries [][]string) *Blacklist {
@@ -182,11 +180,10 @@ func readCSV(path string) ([][]string, error) {
 }
 
 /** Review Message ******************************/
-func (bl *Blacklist) CheckTier0(msg string) bool {
+func (bl *Blacklist) SyncCheckTier0(msg string) bool {
 	isOK := true
 
-	for i, re := range bl.Tier0 {
-		fmt.Sprintln("regex " + string(i) + " " + msg)
+	for _, re := range bl.Tier0 {
 		if re.MatchString(msg) {
 			isOK = false
 			break
