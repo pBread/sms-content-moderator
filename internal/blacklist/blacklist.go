@@ -132,7 +132,7 @@ func readCSV(path string) ([][]string, error) {
 }
 
 /** Review Message ******************************/
-func (bl *Blacklist) SyncCheckTier0(msg string) bool {
+func (bl *Blacklist) CheckTier0(msg string) bool {
 	isOK := true
 
 	for _, re := range bl.Tier0 {

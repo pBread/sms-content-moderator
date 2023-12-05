@@ -46,12 +46,12 @@ func evalTier0(bl *blacklist.Blacklist, idx int, msg string) {
 
 	for i := 0; i < runs; i++ {
 		startTime := time.Now()
-		_ = bl.SyncCheckTier0(msg)
+		_ = bl.CheckTier0(msg)
 		totalDuration += time.Since(startTime)
 	}
 
 	avgDuration := totalDuration.Nanoseconds() / runs
-	result := bl.SyncCheckTier0(msg)
+	result := bl.CheckTier0(msg)
 
 	resultStr := "failed"
 	if result {
