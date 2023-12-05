@@ -10,6 +10,6 @@ func BenchmarkCheckTier0(b *testing.B) {
 
 	// Run the function b.N times
 	for n := 0; n < b.N; n++ {
-		bl.CheckTier0("some test message")
+		bl.EvalTier0("some test message")
 	}
 }

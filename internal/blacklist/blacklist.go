@@ -2,6 +2,7 @@ package blacklist
 
 import (
 	"encoding/csv"
+	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -39,6 +40,7 @@ func GetBlackList() *Blacklist {
 	once.Do(func() {
 		entries, _ := readCSV("config/blacklist.csv")
 		instance = buildBlacklist(entries)
+		fmt.Println("blacklist initialized")
 	})
 
 	return instance
@@ -131,28 +133,30 @@ func readCSV(path string) ([][]string, error) {
 	return entries, nil
 }
 
-func (bl *Blacklist) CheckTier0(msg string) bool {
-	isOK := true
+// true if any blacklist matches the message
+func (bl *Blacklist) EvalTier0(msg string) bool {
+	isMatched := false
 
 	for _, re := range bl.Tier0 {
 		if re.MatchString(msg) {
-			isOK = false
+			isMatched = true
 			break
 		}
 	}
 
-	return isOK
+	return isMatched
 }
 
-func (bl *Blacklist) CheckTier1(msg string) bool {
-	isOK := false
+// true if any blacklist matches the message
+func (bl *Blacklist) EvalTier1(msg string) bool {
+	isMatched := false
 
 	for _, re := range bl.Tier1 {
 		if re.MatchString(msg) {
-			isOK = true
+			isMatched = true
 			break
 		}
 	}
 
-	return isOK
+	return isMatched
 }
