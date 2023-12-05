@@ -133,7 +133,7 @@ func readCSV(path string) ([][]string, error) {
 	return entries, nil
 }
 
-// true if any blacklist matches the message
+// true if message matches any tier 0 blacklist entry
 func (bl *Blacklist) EvalTier0(msg string) bool {
 	isMatched := false
 
@@ -147,7 +147,7 @@ func (bl *Blacklist) EvalTier0(msg string) bool {
 	return isMatched
 }
 
-// true if any blacklist matches the message
+// true if message matches any tier 1 blacklist entry
 func (bl *Blacklist) EvalTier1(msg string) bool {
 	isMatched := false
 
