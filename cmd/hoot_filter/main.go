@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/pbread/hoot-filter/internal/blacklist"
@@ -56,14 +57,10 @@ func main() {
 }
 
 func firstN(s string, n int) string {
-	i := 0
-	for j := range s {
-		if i == n {
-			return s[:j]
-		}
-		i++
+	if len(s) >= n {
+		return s[:n]
 	}
-	return s
+	return s + strings.Repeat(" ", n-len(s))
 }
 
 // func main() {
