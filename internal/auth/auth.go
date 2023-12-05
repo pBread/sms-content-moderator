@@ -31,10 +31,10 @@ func TwilioAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func validateRequest(r *http.Request) (bool, error) {
-	signatureGiven := r.Header.Get("X-Twilio-Signature")
+func validateRequest(req *http.Request) (bool, error) {
+	signatureGiven := req.Header.Get("X-Twilio-Signature")
 
-	signatureExpected, err := sign(r)
+	signatureExpected, err := sign(req)
 	if err != nil {
 		return false, err
 	}
@@ -43,15 +43,15 @@ func validateRequest(r *http.Request) (bool, error) {
 	return hmac.Equal([]byte(signatureGiven), []byte(signatureExpected)), nil
 }
 
-func sign(r *http.Request) (string, error) {
-	body, err := io.ReadAll(r.Body)
+func sign(req *http.Request) (string, error) {
+	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		return "", errors.New("No request body. Hint: This app only supports POST requests.")
 	}
 
 	// Create the base string to sign, which is the full URL of the request
 	// concatenated with the URL-encoded POST body
-	url := "https://" + r.Host + r.URL.String()
+	url := "https://" + req.Host + req.URL.String()
 	dataToSign := url + string(body)
 
 	// Create an HMAC-SHA1 hasher
