@@ -36,11 +36,11 @@ func main() {
 	bl := blacklist.GetBlackList()
 
 	for idx, msg := range tier0Fails {
-		syncEvalTier0(bl, idx, msg)
+		evalTier0(bl, idx, msg)
 	}
 }
 
-func syncEvalTier0(bl *blacklist.Blacklist, idx int, msg string) {
+func evalTier0(bl *blacklist.Blacklist, idx int, msg string) {
 	const runs = 1000
 	var totalDuration time.Duration
 
