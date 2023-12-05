@@ -1,13 +1,9 @@
 package blacklist
 
 import (
-	"encoding/csv"
-	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 type MatchType string
@@ -26,28 +22,9 @@ type Blacklist struct {
 	Tier1 []*regexp.Regexp
 }
 
-var (
-	instance *Blacklist
-	once     sync.Once
-)
-
-/****************************************************
- Get Blacklist
-****************************************************/
-
 // blacklist is CSV style array w/columns [phrase, tier (0 | 1), type ("regex" | "string")]
-func GetBlackList() *Blacklist {
-	once.Do(func() {
-		entries, _ := readCSV("config/blacklist.csv")
-		instance = buildBlacklist(entries)
-		fmt.Println("blacklist initialized")
-	})
-
-	return instance
-}
-
-func buildBlacklist(entries [][]string) *Blacklist {
-	blacklist := Blacklist{
+func MakeBlacklist(entries [][]string) *Blacklist {
+	bl := Blacklist{
 		Tier0: []*regexp.Regexp{},
 		Tier1: []*regexp.Regexp{},
 	}
@@ -69,9 +46,9 @@ func buildBlacklist(entries [][]string) *Blacklist {
 		if mtype == RegexType {
 			re := regexp.MustCompile(entry[0])
 			if tier == 0 {
-				blacklist.Tier0 = append(blacklist.Tier0, re)
+				bl.Tier0 = append(bl.Tier0, re)
 			} else if tier == 1 {
-				blacklist.Tier1 = append(blacklist.Tier1, re)
+				bl.Tier1 = append(bl.Tier1, re)
 			}
 		} else if mtype == StringType {
 			if tier == 0 {
@@ -91,10 +68,10 @@ func buildBlacklist(entries [][]string) *Blacklist {
 	tier0StringsReg := regexp.MustCompile("(?i)\\b(" + tier0Builder.String() + ")\\b")
 	tier1StringsReg := regexp.MustCompile("(?i)\\b(" + tier1Builder.String() + ")\\b")
 
-	blacklist.Tier0 = append([]*regexp.Regexp{tier0StringsReg}, blacklist.Tier0...)
-	blacklist.Tier1 = append([]*regexp.Regexp{tier1StringsReg}, blacklist.Tier1...)
+	bl.Tier0 = append([]*regexp.Regexp{tier0StringsReg}, bl.Tier0...)
+	bl.Tier1 = append([]*regexp.Regexp{tier1StringsReg}, bl.Tier1...)
 
-	return &blacklist
+	return &bl
 }
 
 func checkEntry(row int, entry []string) {
@@ -116,21 +93,6 @@ func checkEntry(row int, entry []string) {
 
 func rowPanic(row int, context string) {
 	panic("Blacklist malformed at row " + string(rune(row+1)) + ". " + context)
-}
-
-func readCSV(path string) ([][]string, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-
-	reader := csv.NewReader(file)
-	entries, err := reader.ReadAll()
-	if err != nil {
-		return nil, err
-	}
-
-	return entries, nil
 }
 
 // true if message matches any tier 0 blacklist entry

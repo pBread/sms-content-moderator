@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/pbread/hoot-filter/internal/blacklist"
 )
@@ -15,7 +17,7 @@ func main() {
 		port = "8080"
 	}
 
-	prepare()
+	initialize()
 
 	http.HandleFunc("/webhook", handler)
 	// http.HandleFunc("/webhook", auth.TwilioAuthMiddleware(handler))
@@ -25,17 +27,35 @@ func main() {
 		log.Fatal("Error starting server:", err)
 		os.Exit(1)
 	}
-
 }
 
-func prepare() {
-	// prepares blacklist
-	blacklist.GetBlackList()
+var (
+	bl   *blacklist.Blacklist
+	once sync.Once
+)
+
+func initialize() {
+	once.Do(func() {
+		file, err := os.Open("config/blacklist.csv")
+		if err != nil {
+			panic("Error loading blacklist CSV: " + err.Error())
+		}
+
+		reader := csv.NewReader(file)
+		entries, err := reader.ReadAll()
+		if err != nil {
+			panic("Error reading blacklist CSV: " + err.Error())
+		}
+
+		bl = blacklist.MakeBlacklist(entries)
+		fmt.Println("blacklist initialized")
+	})
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("request")
+	initialize()
 
+	fmt.Println("request")
 	if err := req.ParseForm(); err != nil {
 		http.Error(w, "Error parsing form", http.StatusBadRequest)
 		return
@@ -44,7 +64,6 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	msg := req.FormValue("Body")
 	fmt.Println("body: " + msg)
 
-	bl := blacklist.GetBlackList()
 	isBlacklistMatched := false
 
 	isBlacklistMatched = bl.EvalTier0(msg)
