@@ -12,9 +12,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 )
 
-const twilioAuthToken = "TWILIO_AUTH_TOKEN"
+var twilioAuthToken = os.Getenv("TWILIO_AUTH_TOKEN")
 
 func TwilioAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

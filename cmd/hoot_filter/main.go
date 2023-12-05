@@ -50,6 +50,13 @@ func initialize() {
 		bl = blacklist.MakeBlacklist(entries)
 		fmt.Println("blacklist initialized")
 	})
+
+	once.Do(func() {
+		twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
+		if len(twilioAuthToken) != 32 {
+			panic("Invalid env variable: TWILIO_AUTH_TOKEN")
+		}
+	})
 }
 
 func handler(w http.ResponseWriter, req *http.Request) {
