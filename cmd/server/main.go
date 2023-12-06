@@ -75,9 +75,7 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	msg := req.FormValue("Body")
 	fmt.Println("body: " + msg)
 
-	isBlacklistMatched := false
-
-	isBlacklistMatched = bl.EvalTier0(msg)
+	isBlacklistMatched := bl.EvalTier0(msg)
 	if isBlacklistMatched {
 		http.Error(w, "Message contains a tier 0 prohibited word", http.StatusForbidden)
 	}
