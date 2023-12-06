@@ -1,1 +1,1 @@
-go run ./cmd/hoot_filter
+go run ./cmd/server
