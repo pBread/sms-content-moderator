@@ -6,25 +6,20 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"sync"
 
 	"github.com/joho/godotenv"
-
+	"github.com/pbread/hoot-filter/internal/auth"
 	"github.com/pbread/hoot-filter/internal/blacklist"
 )
 
 var (
-	bl   *blacklist.Blacklist
-	once sync.Once
+	bl              *blacklist.Blacklist
+	twilioAuthToken string
 )
 
 func main() {
-	once.Do(func() {
-		godotenv.Load()
-		checkEnv()
-
-		loadBlacklist()
-	})
+	loadEnv()
+	loadBlacklist()
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -32,7 +27,7 @@ func main() {
 	}
 
 	http.HandleFunc("/webhook", handler)
-	// http.HandleFunc("/webhook", auth.TwilioAuthMiddleware(handler))
+	http.HandleFunc("/webhook-with-auth", auth.TwilioAuthMiddleware(handler, twilioAuthToken))
 
 	fmt.Println("Server is starting on port " + port + "...")
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
@@ -41,8 +36,10 @@ func main() {
 	}
 }
 
-func checkEnv() {
-	twilioAuthToken := os.Getenv("TWILIO_AUTH_TOKEN")
+func loadEnv() {
+	godotenv.Load()
+
+	twilioAuthToken = os.Getenv("TWILIO_AUTH_TOKEN")
 	if len(twilioAuthToken) != 32 {
 		panic("Invalid env variable: TWILIO_AUTH_TOKEN")
 	}
