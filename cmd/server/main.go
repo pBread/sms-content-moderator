@@ -13,8 +13,10 @@ import (
 )
 
 var (
-	bl              *blacklist.Blacklist
+	openAiKey       string
 	twilioAuthToken string
+
+	bl *blacklist.Blacklist
 )
 
 func main() {
@@ -39,9 +41,14 @@ func main() {
 func loadEnv() {
 	godotenv.Load()
 
+	openAiKey = os.Getenv("OPENAI_KEY")
+	if len(twilioAuthToken) == 0 {
+		panic("Missing env variable: OPENAI_KEY")
+	}
+
 	twilioAuthToken = os.Getenv("TWILIO_AUTH_TOKEN")
 	if len(twilioAuthToken) != 32 {
-		panic("Invalid env variable: TWILIO_AUTH_TOKEN")
+		panic("Missing or invalid env variable: TWILIO_AUTH_TOKEN")
 	}
 }
 
