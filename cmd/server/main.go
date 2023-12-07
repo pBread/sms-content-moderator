@@ -84,5 +84,4 @@ func handler(w http.ResponseWriter, req *http.Request) {
 	if isBlacklistMatched {
 		http.Error(w, "Message contains a tier 1 prohibited word", http.StatusForbidden)
 	}
-
 }

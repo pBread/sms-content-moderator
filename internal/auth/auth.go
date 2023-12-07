@@ -12,39 +12,33 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
-var twilioAuthToken = os.Getenv("TWILIO_AUTH_TOKEN")
+func TwilioAuthMiddleware(next http.HandlerFunc, authToken string) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		signatureGiven := req.Header.Get("X-Twilio-Signature")
 
-func TwilioAuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		isSignatureValid, err := validateRequest(r)
+		signatureExpected, err := sign(req, authToken)
 		if err != nil {
-			fmt.Println("Error:", err)
+			fmt.Println("Error: ", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		isSignatureValid := hmac.Equal([]byte(signatureGiven), []byte(signatureExpected))
+		if err != nil {
+			fmt.Println("Error: ", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
 		}
 		if !isSignatureValid {
 			w.WriteHeader(http.StatusUnauthorized)
 		}
 
-		next(w, r)
+		next(w, req)
 	}
 }
 
-func validateRequest(req *http.Request) (bool, error) {
-	signatureGiven := req.Header.Get("X-Twilio-Signature")
-
-	signatureExpected, err := sign(req)
-	if err != nil {
-		return false, err
-	}
-
-	// Compare the calculated signature with the expected signature
-	return hmac.Equal([]byte(signatureGiven), []byte(signatureExpected)), nil
-}
-
-func sign(req *http.Request) (string, error) {
+func sign(req *http.Request, authToken string) (string, error) {
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		return "", errors.New("No request body. Hint: This app only supports POST requests.")
@@ -56,7 +50,7 @@ func sign(req *http.Request) (string, error) {
 	dataToSign := url + string(body)
 
 	// Create an HMAC-SHA1 hasher
-	hasher := hmac.New(sha1.New, []byte(twilioAuthToken))
+	hasher := hmac.New(sha1.New, []byte(authToken))
 	// Write the data to the hasher
 	hasher.Write([]byte(dataToSign))
 
