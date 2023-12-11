@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pbread/hoot-filter/internal/prompts"
 )
 
 type MatchType string
@@ -75,19 +77,30 @@ func MakeBlacklist(entries [][]string) *Blacklist {
 }
 
 func checkEntry(row int, entry []string) {
-	if len(entry) != 3 {
-		rowPanic(row, "Does not contain 3 columns")
+	if len(entry) != 4 {
+		rowPanic(row, "Does not contain 4 columns")
 	}
 	if len(entry[0]) < 1 {
 		rowPanic(row, "Content is empty")
 	}
+
 	tier, err := strconv.Atoi(entry[1])
 	if err != nil || (tier != 0 && tier != 1) {
 		rowPanic(row, "Tier must be 0 or 1, received: "+entry[1])
 	}
+
 	mtype := MatchType(entry[2])
 	if mtype != RegexType && mtype != StringType {
 		rowPanic(row, "Type must be \"string\" or \"regex\", received: "+entry[2])
+	}
+
+	policy := entry[3]
+	if _, err := prompts.PromptMap[policy]; err {
+		keys := []string{}
+		for key := range prompts.PromptMap {
+			keys = append(keys, key)
+		}
+		rowPanic(row, "Invalid policy ("+entry[2]+"). Policies must be one of the following: "+strings.Join(keys, ", "))
 	}
 }
 
