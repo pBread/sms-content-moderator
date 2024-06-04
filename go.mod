@@ -1,6 +1,6 @@
-module github.com/pbread/hoot-filter
+module github.com/pBread/sms-content-moderator
 
-go 1.21
+go 1.21.4
 
 require github.com/joho/godotenv v1.5.1
 
