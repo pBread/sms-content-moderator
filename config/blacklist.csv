@@ -1,4 +1,4 @@
-Content,ContentType,Policy,Tier,
+Content,ContentType,Policy,Tier
 verybadword,string,profanity,0
 (?i)v.*e.*r.*y.*b.*a.*d.*w.*o.*r.*d.*,regex,profanity,0
 maybebadword,string,profanity,1
