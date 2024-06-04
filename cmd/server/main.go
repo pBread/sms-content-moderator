@@ -8,6 +8,7 @@ import (
 	"runtime"
 
 	"github.com/pBread/sms-content-moderator/internal/blacklist"
+	"github.com/pBread/sms-content-moderator/internal/prompt"
 )
 
 type RequestBody struct {
@@ -52,6 +53,10 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	violations := blacklist.CheckContent(reqBody.Message)
+
+	promptStr, _ := prompt.BuildPrompt(reqBody.Message, violations)
+
+	log.Println(promptStr)
 
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string][]string{"Violations": violations}
