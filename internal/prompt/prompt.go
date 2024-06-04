@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// BuildPrompt constructs the prompt for content evaluation based on the base prompt and policies.
 func BuildPrompt(content string, policies []string) (string, error) {
 	// Read the base prompt from config/prompt.txt
 	basePrompt, err := os.ReadFile("config/prompt.txt")
@@ -19,15 +20,19 @@ func BuildPrompt(content string, policies []string) (string, error) {
 
 	// Add each policy-specific file content if it exists
 	for _, policy := range policies {
+		var policyName string
 		policyParts := strings.SplitN(policy, "-", 2)
-		if len(policyParts) != 2 {
-			continue
+		if len(policyParts) == 2 {
+			policyName = policyParts[1]
+		} else {
+			policyName = policyParts[0]
 		}
-		policyFilePath := fmt.Sprintf("config/policies/%s.txt", policyParts[1])
+
+		policyFilePath := fmt.Sprintf("config/policies/%s.txt", policyName)
 		if _, err := os.Stat(policyFilePath); err == nil {
 			policyContent, err := os.ReadFile(policyFilePath)
 			if err == nil {
-				prompt += fmt.Sprintf("\n\n%s:\n%s", policyParts[1], string(policyContent))
+				prompt += fmt.Sprintf("\n\n%s:\n%s", policyName, string(policyContent))
 			}
 		}
 	}
