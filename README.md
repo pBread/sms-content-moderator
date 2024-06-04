@@ -25,6 +25,8 @@ Prompts are appended with additional information based on which policies are vio
 
 Every policy can have an specific prompt that may including a .txt file in config/policies/[policy].txt
 
+Create a section on how to update policies
+
 ### Deployment Examples
 
 The directory cmd/ has multiple examples of various deployments.
