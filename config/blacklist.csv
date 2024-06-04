@@ -1,0 +1,7 @@
+Content,ContentType,Policy,Tier,
+verybadword,string,profanity,0
+(?i)v.*e.*r.*y.*b.*a.*d.*w.*o.*r.*d.*,regex,profanity,0
+maybebadword,string,profanity,1
+(?i)m.*a.*y.*b.*e.*b.*a.*d.*w.*o.*r.*d.*,regex,profanity,1
+cannabis,string,vice,1
+(?i)c.*a.*n.*n.*a.*b.*i.*s.*,string,vice,1

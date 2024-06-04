@@ -1,9 +1,0 @@
-content,type,tier,policy
-very bad word,string,0,profanity
-(?i)v.*e.*r.*y.*b.*a.*d.*w.*o.*r.*d.*,regex,0,profanity
-maybe bad word,string,1,profanity
-(?i)m.*a.*y.*b.*e.*b.*a.*d.*w.*o.*r.*d.*,regex,1,profanity
-cbd,string,1,cannabis
-cannabis,string,1,cannabis
-(?i)c.*a.*n.*n.*a.*b.*i.*s.*,string,1,cannabis
-
