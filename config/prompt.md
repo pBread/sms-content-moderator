@@ -7,7 +7,7 @@ Format your response in the following JSON structure:
 ```json
 [
   {
-    "policy": "string",
+    "policy": "string", // policy id
     "isViolation": "boolean",
     "reasoning": "string", // a description of your rationale
     "confidence": "number" // 0-1 how likely the message is a violation

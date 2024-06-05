@@ -1,7 +1,0 @@
-Here are some vape examples...
-
-Message: "Would you like to buy a vape?"
-IsViolation: true
-
-Message: "I can't find your house. I'm parked outside of the vape store"
-IsViolation: false
