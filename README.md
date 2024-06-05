@@ -21,6 +21,8 @@ Base prompt is defined in config/prompt.txt.
 
 Prompts are appended with additional information based on which policies are violated (see ### Policy Definition)
 
+Describe how to update prompts. Explain how the prompt is assembled and how it is sent to the LLM.
+
 ### Policy Definition
 
 Every policy can have an specific prompt that may including a .txt file in config/policies/[policy].txt
