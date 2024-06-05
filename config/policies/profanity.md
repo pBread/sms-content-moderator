@@ -1,17 +1,17 @@
-## Policy on Profanity
+# Policy on Profanity
 
 Profanity is not allowed. Words that have dual meanings are permitted if they are not being used as profanity.
 
 For example, "pussy cat" is permitted because it refers to an animal but "pussy" used in a derogatory context or as a slang is not permitted.
 
-### Guidelines:
+## Guidelines:
 
 1. Evaluate the context in which the word is used.
 2. Determine if the word is intended as an insult, slur, or derogatory term.
 3. Words or phrases that are commonly known as profanity or used in a profane context should be flagged.
 4. Dual-meaning words should be carefully reviewed to determine intent and usage context.
 
-### Message Examples
+## Message Examples
 
 ```json
 [
