@@ -1,6 +1,8 @@
 # Instructions
 
-You are tasked with evaluating whether the given content violates any of the following policies: {{policies}}.
+You are tasked with evaluating whether the given content violates any of these policies: {{policies}}.
+
+
 
 Review this content:
 {{content}}
