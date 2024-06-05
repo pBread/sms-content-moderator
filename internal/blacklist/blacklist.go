@@ -54,15 +54,16 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 	stringMap := make(map[string][]string) // temporary map to hold strings for each key
 
 	for _, entry := range blacklistEntries {
-		key := fmt.Sprintf("%d-%s", entry.Tier, entry.Policy)
+		key := fmt.Sprintf("%d-%s", entry.Tier, strings.TrimSpace(entry.Policy))
 
-		if entry.ContentType == "regex" {
+		contentType := strings.TrimSpace(entry.ContentType)
+		if contentType == "regex" {
 			re, err := regexp.Compile(entry.Content)
 			if err != nil {
 				panic("Invalid regex: " + entry.Content)
 			}
 			regexMap[key] = append(regexMap[key], re)
-		} else if entry.ContentType == "string" {
+		} else if contentType == "string" {
 			// collect strings to compile into a single regex later
 			stringMap[key] = append(stringMap[key], regexp.QuoteMeta(entry.Content))
 		}
