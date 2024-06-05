@@ -39,3 +39,5 @@ The directory cmd/ has multiple examples of various deployments.
 - Twilio is authenticated through the X-Twilio-Signature, see https://www.twilio.com/docs/usage/webhooks/webhooks-security#validating-signatures-from-twilio
 
 - You need to define the env variables CONVERSATIONS_PRE_EVENT_WEBHOOK_URL & TWILIO_AUTH_TOKEN
+
+### Explain the prompt can be offloaded to the LLM provider, most likely

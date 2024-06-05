@@ -7,7 +7,9 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/joho/godotenv"
 	"github.com/pBread/sms-content-moderator/internal/blacklist"
+	"github.com/pBread/sms-content-moderator/internal/llm"
 	"github.com/pBread/sms-content-moderator/internal/prompt"
 )
 
@@ -16,6 +18,10 @@ type RequestBody struct {
 }
 
 func main() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	projectRoot := getProjectRoot()
 	csvPath := filepath.Join(projectRoot, "/config/blacklist.csv")
 	blacklist.Init(csvPath)
@@ -57,6 +63,10 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 	promptStr, _ := prompt.BuildPrompt(reqBody.Message, violations)
 
 	log.Println(promptStr)
+
+	resp, _ := llm.EvalPolicyViolation(promptStr)
+
+	log.Println(resp)
 
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string][]string{"Violations": violations}
