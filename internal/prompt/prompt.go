@@ -27,17 +27,18 @@ func BuildPrompt(content string, policies []string) (string, error) {
 			policyName = policyParts[0]
 		}
 
+		policyName = strings.TrimSpace(policyName)
+
 		policyFilePath := fmt.Sprintf("config/policies/%s.md", policyName)
 		if _, err := os.Stat(policyFilePath); err == nil {
 			policyContent, err := os.ReadFile(policyFilePath)
 			if err == nil {
-				policyNotes += fmt.Sprintf("\n\n%s:\n%s", policyName, string(policyContent))
+				policyNotes += fmt.Sprintf("\n\n===POLICY_ID:'%s'===\n%s", policyName, string(policyContent))
 			}
 		}
 	}
 
 	// Inject the content and policy variables into the base prompt
-
 	prompt := string(basePrompt)
 	prompt = strings.Replace(prompt, "{{content}}", content, 1)
 	prompt = strings.Replace(prompt, "{{policies}}", policyNotes, 1)
