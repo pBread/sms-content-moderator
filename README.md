@@ -15,6 +15,8 @@ type CSVBlacklistEntry struct {
 }
 ```
 
+CSV must include a header.
+
 ### Prompt Definition
 
 Base prompt is defined in config/prompt.txt.
