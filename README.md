@@ -65,7 +65,7 @@ curl -X POST \
 
 Configuration of the SMS Content Moderator involves setting up [blacklist](config/blacklist.csv) entries and [policy documents](config/policies/) to define what content is checked and how it is evaluated.
 
-**Important: The provided blacklist and policy documents serve as examples and must be customized to the intended use-case.**
+_Important: The provided blacklist and policy documents serve as examples and must be customized to the intended use-case._
 
 ### Blacklist Configuration
 
