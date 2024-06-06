@@ -44,11 +44,9 @@ func CheckContent(content string) []string {
 // Init initializes the blacklist from a CSV file at the specified absolute path.
 func Init(absoluteFilePath string) {
 	blacklist = buildBlacklist(absoluteFilePath)
-	if err := verifyPolicyDocuments(blacklist); err != nil {
-		logger.Fatal("Policy verification failed: " + err.Error())
-	}
+	verifyPolicyDocuments(blacklist) // fatal error if policy docs missing
 
-	logger.Info("Initalized blacklist: " + absoluteFilePath)
+	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
 }
 
 func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
@@ -131,7 +129,7 @@ func csvToEntries(csv [][]string) []CSVBlacklistEntry {
 	return entries
 }
 
-func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) error {
+func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
 	missingDocs := []string{}
 
 	for policy := range blacklist {
@@ -143,7 +141,7 @@ func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) error {
 	}
 
 	if len(missingDocs) > 0 {
-		return fmt.Errorf("missing policy documents for: %v", missingDocs)
+		logger.Fatal("Unable to initialize blacklist due to missing policy documents: ", strings.Join(missingDocs, ", "))
+
 	}
-	return nil
 }
