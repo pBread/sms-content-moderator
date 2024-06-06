@@ -50,7 +50,10 @@ func Init(absoluteFilePath string) {
 }
 
 func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
-	csv := readCSV(absoluteFilePath)
+	csv, err := readCSV(absoluteFilePath)
+	if err != nil {
+		logger.Fatal("Unable to read Blacklist CSV: ", err.Error())
+	}
 	blacklistEntries := csvToEntries(csv)
 
 	regexMap := make(map[string][]*regexp.Regexp)
@@ -85,10 +88,11 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 	return regexMap
 }
 
-func readCSV(filePath string) [][]string {
+func readCSV(filePath string) ([][]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		logger.Fatal("Unable to open file: " + err.Error())
+		return nil, fmt.Errorf("unable to open file: %w", err)
 	}
 	defer file.Close()
 
@@ -96,9 +100,10 @@ func readCSV(filePath string) [][]string {
 	data, err := reader.ReadAll()
 	if err != nil {
 		logger.Fatal("Unable to read CSV data: " + err.Error())
+		return nil, fmt.Errorf("unable to open file: %w", err)
 	}
 
-	return data
+	return data, nil
 }
 
 func csvToEntries(csv [][]string) []CSVBlacklistEntry {
