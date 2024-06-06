@@ -4,5 +4,4 @@ verybadword,string,profanity,0
 maybebadword,string,profanity,1
 (?i)m.*a.*y.*b.*e.*b.*a.*d.*w.*o.*r.*d.*,regex,profanity,1
 vape,string,vape,1
-pussy,string,profanity,1
 casino,string,gambling,1
