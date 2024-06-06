@@ -6,6 +6,21 @@ The SMS Content Moderator is a service designed to help businesses monitor and c
 
 _Note: This app requires configuration for individual use cases (see [Configuring Content Rules](#configuring-content-rules)). This app does not gaurantee messages are compliant with SMS guidelines; rather, it serves as a supportive tool in compliance efforts._
 
+### How the App Works
+
+The SMS Content Moderator operates through a straightforward yet effective process designed to ensure SMS compliance with relevant guidelines:
+
+1. **Configuration by Administrators**: Administrators must first configure the system by setting up a blacklist.csv and corresponding policy documents for each policy. The blacklist entries specify patterns to match (either as direct strings or regex) and categorize them by severity (Tier 0 for automatic rejection, Tier 1 for further review).
+
+2. **Blacklist and Policy Matching**: When a message is received via API, the app scans the content against the blacklist entries. If a match is found, the response depends on the tier:
+
+- **Tier 0**: Messages matching these entries are immediately flagged as violations, and the API response includes the specific policies breached. Such messages are recommended for rejection.
+- **Tier 1**: These entries trigger a deeper examination. The content is further analyzed using policy documents related to the matched entries to determine the context and intent.
+
+3. **Contextual Analysis with LLM**: For Tier 1 matches, the app compiles relevant policies into a prompt and consults an LLM (like OpenAI) to assess if the message content indeed violates the intended policies. This step ensures that messages are not wrongly flagged based on out-of-context words or phrases.
+
+This system allows businesses to customize their moderation tools extensively, ensuring that SMS content aligns with both internal standards and regulatory requirements.
+
 ## Quickstart
 
 ### Prerequisites
@@ -47,6 +62,14 @@ curl -X POST \
 ```
 
 ## Configuring Content Rules
+
+### Overview
+
+Configuration of the SMS Content Moderator involves setting up [blacklist](config/blacklist.csv) entries and [policy documents](config/policies/) to define what content is checked and how it is evaluated.
+
+**Important: The provided blacklist and policy documents serve as examples and must be customized to the intended use-case.**
+
+### Blacklist Configuration
 
 # DEPRECATED
 
