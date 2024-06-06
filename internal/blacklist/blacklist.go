@@ -4,11 +4,12 @@ import (
 	"bufio"
 	"encoding/csv"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/pBread/sms-content-moderator/internal/logger"
 )
 
 type CSVBlacklistEntry struct {
@@ -43,7 +44,7 @@ func CheckContent(content string) []string {
 // Init initializes the blacklist from a CSV file at the specified absolute path.
 func Init(absoluteFilePath string) {
 	blacklist = buildBlacklist(absoluteFilePath)
-	log.Println("Initalized blacklist: " + absoluteFilePath)
+	logger.Info("Initalized blacklist: " + absoluteFilePath)
 }
 
 func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
@@ -60,7 +61,7 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 		if contentType == "regex" {
 			re, err := regexp.Compile(entry.Content)
 			if err != nil {
-				panic("Invalid regex: " + entry.Content)
+				logger.Fatal("Invalid regex: " + entry.Content)
 			}
 			regexMap[key] = append(regexMap[key], re)
 		} else if contentType == "string" {
@@ -74,7 +75,7 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 		pattern := "(?i)(" + strings.Join(strs, "|") + ")"
 		re, err := regexp.Compile(pattern)
 		if err != nil {
-			panic("Invalid regex from strings: " + strings.Join(strs, ", "))
+			logger.Fatal("Invalid regex from strings: " + strings.Join(strs, ", "))
 		}
 		regexMap[key] = append(regexMap[key], re)
 	}
@@ -85,14 +86,14 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 func readCSV(filePath string) [][]string {
 	file, err := os.Open(filePath)
 	if err != nil {
-		panic("Unable to open file: " + err.Error())
+		logger.Fatal("Unable to open file: " + err.Error())
 	}
 	defer file.Close()
 
 	reader := csv.NewReader(bufio.NewReader(file))
 	data, err := reader.ReadAll()
 	if err != nil {
-		panic("Unable to read CSV data: " + err.Error())
+		logger.Fatal("Unable to read CSV data: " + err.Error())
 	}
 
 	return data
@@ -106,12 +107,12 @@ func csvToEntries(csv [][]string) []CSVBlacklistEntry {
 			continue
 		}
 		if len(row) != 4 {
-			panic("CSV row does not contain exactly 4 columns.")
+			logger.Fatal("CSV row does not contain exactly 4 columns.")
 		}
 
 		tier, err := strconv.Atoi(row[3])
 		if err != nil {
-			panic("Invalid tier value: " + row[3])
+			logger.Fatal("Invalid tier value: " + row[3])
 		}
 
 		entry := CSVBlacklistEntry{
