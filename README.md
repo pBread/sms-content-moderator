@@ -1,5 +1,55 @@
 # SMS Content Moderator
 
+## Overview
+
+The SMS Content Moderator is an open-source application designed to help businesses monitor and control the content of SMS messages. This service allows administrators to configure content moderation policies to evaluate messages for potentially inappropriate or restricted content.
+
+_Note: This app requires configuration for individual use cases (see [Configuring Content Rules](#configuring-content-rules)). This app does not gaurantee messages are compliant with SMS guidelines; rather, it serves as a supportive tool in compliance efforts._
+
+## Quickstart
+
+### Prerequisites
+
+- [Install Go on your machine](https://go.dev/doc/install)
+- [Create an OpenAI Platform Account](https://platform.openai.com/signup)
+
+#### Clone Repo
+
+```bash
+git clone https://github.com/yourgithub/sms-content-moderator.git
+cd sms-content-moderator
+```
+
+#### Set Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+Open the .env file in a text editor and set the following variables:
+
+- OPENAI_API_KEY: Your OpenAI API key.
+- OPENAI_MODEL: The model identifier you intend to use (e.g., "gpt-4").
+
+#### Run Application
+
+```bash
+go run ./cmd/server
+```
+
+#### Test the API
+
+```bash
+curl -X POST \
+     -H "Content+Type: application/json" \
+     -d '{"Message": "This message contains a maybe bad word."}' \
+     http://localhost:8080/evaluate-message
+```
+
+## Configuring Content Rules
+
+# DEPRECATED
+
 ## Docs to Add
 
 ### Blacklist CSV Definition
