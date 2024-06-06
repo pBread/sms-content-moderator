@@ -12,8 +12,8 @@ The SMS Content Moderator operates through a straightforward yet effective proce
 
 2. **Blacklist and Policy Matching**: When a message is received via API, the app scans the content against the blacklist entries. If a match is found, the response depends on the tier:
 
-- **Tier 0**: Messages matching these entries are immediately flagged as violations, and the API response includes the specific policies breached. Such messages are recommended for rejection.
-- **Tier 1**: These entries trigger a deeper examination. The content is further analyzed using policy documents related to the matched entries to determine the context and intent.
+   - **Tier 0**: Messages matching these entries are immediately flagged as violations, and the API response includes the specific policies breached. Such messages are recommended for rejection.
+   - **Tier 1**: These entries trigger a deeper examination. The content is further analyzed using policy documents related to the matched entries to determine the context and intent.
 
 3. **Contextual Analysis with LLM**: For Tier 1 matches, the app compiles relevant policies into a prompt and consults an LLM (like OpenAI) to assess if the message content indeed violates the intended policies. This step ensures that messages are not wrongly flagged based on out-of-context words or phrases.
 
@@ -70,7 +70,7 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 - **Blacklist File**: The blacklist is defined in a CSV located at [config/blacklist.csv](config/blacklist.csv).
 - **CSV Format**: The CSV file <u>must include a header row</u> with the columns in this order: `Content`, `Content Type`, `Policy`, `Tier`. Each row represents one blacklist entry.
 
-  - **Content**: The text or regex pattern to match against. This app uses the [Go regex syntax](https://pkg.go.dev/regexp/syntax).
+  - **Content**: The text or regex pattern (see [Go regex syntax](https://pkg.go.dev/regexp/syntax)) to match against.
   - **Content Type**: `regex` for regular expressions, `string` for direct string matches
   - **Policy**: The name of the policy, which must correspond to a policy markdown file in the [config/policies](config/policies) directory.
   - **Tier**: `0` for words that trigger auto-rejection, `1` for words that indicate a possible violation but require further LLM evaluation.
