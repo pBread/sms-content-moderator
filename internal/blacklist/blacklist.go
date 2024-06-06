@@ -60,57 +60,6 @@ func Init(absoluteFilePath string) {
 	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
 }
 
-func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
-	missingDocs := []string{}
-
-	for policy := range blacklist {
-		policyName := strings.SplitN(policy, "-", 2)[1] // Extract policy name from the key
-		policyFilePath := fmt.Sprintf("config/policies/%s.md", strings.TrimSpace(policyName))
-		if _, err := os.Stat(policyFilePath); os.IsNotExist(err) {
-			missingDocs = append(missingDocs, policyName)
-		}
-	}
-
-	if len(missingDocs) > 0 {
-		logger.Fatal("Unable to initialize blacklist due to missing policy documents: ", strings.Join(missingDocs, ", "))
-
-	}
-}
-
-func makeBlacklist(blacklistEntries []CSVBlacklistEntry) map[string][]*regexp.Regexp {
-	regexMap := make(map[string][]*regexp.Regexp)
-	stringMap := make(map[string][]string) // temporary map to hold strings for each key
-
-	for _, entry := range blacklistEntries {
-		key := fmt.Sprintf("%d-%s", entry.Tier, strings.TrimSpace(entry.Policy))
-
-		contentType := strings.TrimSpace(entry.ContentType)
-		if contentType == "regex" {
-			re, err := regexp.Compile(entry.Content)
-			if err != nil {
-				logger.Fatal("Invalid regex: " + entry.Content)
-			}
-			regexMap[key] = append(regexMap[key], re)
-		} else if contentType == "string" {
-			// collect strings to compile into a single regex later
-			stringMap[key] = append(stringMap[key], regexp.QuoteMeta(entry.Content))
-		}
-	}
-
-	// compile all strings into a single regex for each key
-	for key, strs := range stringMap {
-		pattern := "(?i)(" + strings.Join(strs, "|") + ")"
-		re, err := regexp.Compile(pattern)
-		if err != nil {
-			logger.Fatal("Invalid regex from strings: " + strings.Join(strs, ", "))
-		}
-		regexMap[key] = append(regexMap[key], re)
-	}
-
-	return regexMap
-
-}
-
 func readCSV(filePath string) ([][]string, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -158,4 +107,54 @@ func csvToEntries(csv [][]string) ([]CSVBlacklistEntry, error) {
 		entries = append(entries, entry)
 	}
 	return entries, nil
+}
+
+func makeBlacklist(blacklistEntries []CSVBlacklistEntry) map[string][]*regexp.Regexp {
+	regexMap := make(map[string][]*regexp.Regexp)
+	stringMap := make(map[string][]string) // temporary map to hold strings for each key
+
+	for _, entry := range blacklistEntries {
+		key := fmt.Sprintf("%d-%s", entry.Tier, strings.TrimSpace(entry.Policy))
+
+		contentType := strings.TrimSpace(entry.ContentType)
+		if contentType == "regex" {
+			re, err := regexp.Compile(entry.Content)
+			if err != nil {
+				logger.Fatal("Invalid regex: " + entry.Content)
+			}
+			regexMap[key] = append(regexMap[key], re)
+		} else if contentType == "string" {
+			// collect strings to compile into a single regex later
+			stringMap[key] = append(stringMap[key], regexp.QuoteMeta(entry.Content))
+		}
+	}
+
+	// compile all strings into a single regex for each key
+	for key, strs := range stringMap {
+		pattern := "(?i)(" + strings.Join(strs, "|") + ")"
+		re, err := regexp.Compile(pattern)
+		if err != nil {
+			logger.Fatal("Invalid regex from strings: " + strings.Join(strs, ", "))
+		}
+		regexMap[key] = append(regexMap[key], re)
+	}
+
+	return regexMap
+}
+
+func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
+	missingDocs := []string{}
+
+	for policy := range blacklist {
+		policyName := strings.SplitN(policy, "-", 2)[1] // Extract policy name from the key
+		policyFilePath := fmt.Sprintf("config/policies/%s.md", strings.TrimSpace(policyName))
+		if _, err := os.Stat(policyFilePath); os.IsNotExist(err) {
+			missingDocs = append(missingDocs, policyName)
+		}
+	}
+
+	if len(missingDocs) > 0 {
+		logger.Fatal("Unable to initialize blacklist due to missing policy documents: ", strings.Join(missingDocs, ", "))
+
+	}
 }
