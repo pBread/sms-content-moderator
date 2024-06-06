@@ -23,24 +23,6 @@ type CSVBlacklistEntry struct {
 // and each value is a list of compiled regex patterns for that category.
 var blacklist map[string][]*regexp.Regexp
 
-// CheckContent checks the specified content against the compiled blacklist and returns an array
-// of policies matched by the content. Policy matches are formatted like so: tier-policy,
-// e.g. ["0-profanity"].
-func CheckContent(content string) []string {
-	var violations []string
-
-	for category, regexList := range blacklist {
-		for _, re := range regexList {
-			if re.MatchString(content) {
-				violations = append(violations, category)
-				break
-			}
-		}
-	}
-
-	return violations
-}
-
 // Init initializes the blacklist from a CSV file at the specified absolute path.
 func Init(absoluteFilePath string) {
 	csv, err := readCSV(absoluteFilePath)
@@ -63,6 +45,24 @@ func Init(absoluteFilePath string) {
 	}
 
 	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
+}
+
+// CheckContent checks the specified content against the compiled blacklist and returns an array
+// of policies matched by the content. Policy matches are formatted like so: tier-policy,
+// e.g. ["0-profanity"].
+func CheckContent(content string) []string {
+	var violations []string
+
+	for category, regexList := range blacklist {
+		for _, re := range regexList {
+			if re.MatchString(content) {
+				violations = append(violations, category)
+				break
+			}
+		}
+	}
+
+	return violations
 }
 
 func readCSV(filePath string) ([][]string, error) {
