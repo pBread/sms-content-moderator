@@ -58,7 +58,9 @@ func Init(absoluteFilePath string) {
 		logger.Fatal("Error making blacklist: ", err.Error())
 	}
 
-	verifyPolicyDocuments(blacklist) // fatal error if policy docs missing
+	if err := verifyPolicyDocuments(blacklist); err != nil {
+		logger.Fatal("Error varifying policy documents: ", err.Error())
+	}
 
 	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
 }
@@ -145,7 +147,7 @@ func makeBlacklist(blacklistEntries []CSVBlacklistEntry) (map[string][]*regexp.R
 	return regexMap, nil
 }
 
-func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
+func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) error {
 	missingDocs := []string{}
 
 	for policy := range blacklist {
@@ -157,7 +159,8 @@ func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
 	}
 
 	if len(missingDocs) > 0 {
-		logger.Fatal("Unable to initialize blacklist due to missing policy documents: ", strings.Join(missingDocs, ", "))
-
+		return fmt.Errorf("unable to initialize blacklist due to missing policy documents: %s", strings.Join(missingDocs, ", "))
 	}
+
+	return nil
 }
