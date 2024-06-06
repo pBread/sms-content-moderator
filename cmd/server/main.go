@@ -16,7 +16,7 @@ type RequestBody struct {
 	Message string `json:"Message"`
 }
 
-func main() {
+func init() {
 	if err := godotenv.Load(); err != nil {
 		logger.Fatal("Error loading .env file")
 	}
@@ -24,10 +24,12 @@ func main() {
 	projectRoot := getProjectRoot()
 	csvPath := filepath.Join(projectRoot, "/config/blacklist.csv")
 	blacklist.Init(csvPath)
+}
 
+func main() {
 	http.HandleFunc("/evaluate-message", unauthenticatedHandler)
+	logger.Info("Starting on port" + ":8080")
 
-	logger.Info("starting on port" + ":8080")
 	logger.Fatal(http.ListenAndServe(":8080", nil))
 }
 
