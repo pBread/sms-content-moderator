@@ -1,9 +1,13 @@
-package prompt
+package llm
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
+
+	openai "github.com/sashabaranov/go-openai"
 )
 
 // BuildPrompt constructs the prompt for content evaluation based on the base prompt and policies.
@@ -44,4 +48,34 @@ func BuildPrompt(content string, policies []string) (string, error) {
 	prompt = strings.Replace(prompt, "{{policies}}", policyNotes, 1)
 
 	return prompt, nil
+}
+
+func EvalPolicyViolation(content string) (string, error) {
+	openaiKey := os.Getenv("OPENAI_API_KEY")
+	openaiModel := os.Getenv("OPENAI_MODEL")
+
+	client := openai.NewClient(openaiKey)
+
+	resp, err := client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openaiModel,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: content,
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		log.Printf("ChatCompletion error: %v\n", err)
+		return "", err
+	}
+
+	log.Println(resp.Choices[0].Message.Content)
+
+	return resp.Choices[0].Message.Content, nil
+
 }

@@ -10,7 +10,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pBread/sms-content-moderator/internal/blacklist"
 	"github.com/pBread/sms-content-moderator/internal/llm"
-	"github.com/pBread/sms-content-moderator/internal/prompt"
 )
 
 type RequestBody struct {
@@ -54,18 +53,21 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 
 	var reqBody RequestBody
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		log.Println()
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
 
 	violations := blacklist.CheckContent(reqBody.Message)
 
-	promptStr, _ := prompt.BuildPrompt(reqBody.Message, violations)
+	prompt, err := llm.BuildPrompt(reqBody.Message, violations)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	log.Println(prompt)
 
-	log.Println(promptStr)
-
-	resp, _ := llm.EvalPolicyViolation(promptStr)
-
+	resp, _ := llm.EvalPolicyViolation(prompt)
 	log.Println(resp)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -73,5 +75,4 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		http.Error(w, "Error writing response", http.StatusInternalServerError)
 	}
-
 }
