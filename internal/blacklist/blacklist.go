@@ -48,7 +48,10 @@ func Init(absoluteFilePath string) {
 		logger.Fatal("Unable to read Blacklist CSV: ", err.Error())
 	}
 
-	blacklistEntries := csvToEntries(csv)
+	blacklistEntries, err := csvToEntries(csv)
+	if err != nil {
+		logger.Fatal("Malformed blacklist CSV: ", err.Error())
+	}
 
 	blacklist = makeBlacklist(blacklistEntries)
 
@@ -126,20 +129,24 @@ func readCSV(filePath string) ([][]string, error) {
 	return data, nil
 }
 
-func csvToEntries(csv [][]string) []CSVBlacklistEntry {
+func csvToEntries(csv [][]string) ([]CSVBlacklistEntry, error) {
 	var entries []CSVBlacklistEntry
 
+	if len(csv) == 0 {
+		return nil, fmt.Errorf("csv is empty")
+	}
+
 	for i, row := range csv {
-		if i == 0 {
+		if i == 0 { // Skip header
 			continue
 		}
 		if len(row) != 4 {
-			logger.Fatal("CSV row does not contain exactly 4 columns.")
+			return nil, fmt.Errorf("CSV row %d does not contain exactly 4 columns", i)
 		}
 
 		tier, err := strconv.Atoi(row[3])
 		if err != nil {
-			logger.Fatal("Invalid tier value: " + row[3])
+			return nil, fmt.Errorf("invalid tier value at row %d: %w", i, err)
 		}
 
 		entry := CSVBlacklistEntry{
@@ -150,6 +157,5 @@ func csvToEntries(csv [][]string) []CSVBlacklistEntry {
 		}
 		entries = append(entries, entry)
 	}
-
-	return entries
+	return entries, nil
 }
