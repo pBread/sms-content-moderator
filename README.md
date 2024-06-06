@@ -70,10 +70,10 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 - **Blacklist File**: The blacklist is defined in a CSV located at [config/blacklist.csv](config/blacklist.csv).
 - **CSV Format**: The CSV file <u>must include a header row</u> with the columns in this order: `Content`, `Content Type`, `Policy`, `Tier`. Each row represents one blacklist entry.
 
-  - **Content**:
-  - **Content Type**:
-  - **Policy**:
-  - **Tier**:
+  - **Content**: The text or regex pattern to match against. This app uses the [Go regex syntax](https://pkg.go.dev/regexp/syntax).
+  - **Content Type**: `regex` for regular expressions, `string` for direct string matches
+  - **Policy**: The name of the policy, which must correspond to a policy markdown file in the [config/policies](config/policies) directory.
+  - **Tier**: `0` for words that trigger auto-rejection, `1` for words that indicate a possible violation but require further LLM evaluation.
 
 ### Policy Documents
 
