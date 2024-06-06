@@ -83,6 +83,69 @@ func TestCsvToEntries(t *testing.T) {
 	}
 }
 
+func TestMakeBlacklist(t *testing.T) {
+	// Define test cases
+	cases := []struct {
+		name         string
+		entries      []CSVBlacklistEntry
+		expectedKeys []string
+		wantErr      bool
+	}{
+		{
+			name: "valid entries",
+			entries: []CSVBlacklistEntry{
+				{Content: "badword", ContentType: "string", Policy: "profanity", Tier: 0},
+				{Content: "^badword$", ContentType: "regex", Policy: "profanity", Tier: 0},
+				{Content: "example", ContentType: "string", Policy: "advertising", Tier: 1},
+			},
+			expectedKeys: []string{"0-profanity", "1-advertising"},
+			wantErr:      false,
+		},
+		{
+			name: "invalid regex",
+			entries: []CSVBlacklistEntry{
+				{Content: "invalid(regex", ContentType: "regex", Policy: "profanity", Tier: 0},
+			},
+			expectedKeys: nil,
+			wantErr:      true,
+		},
+	}
+
+	// Execute each test case
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := makeBlacklist(tc.entries)
+
+			// Check for error handling
+			if (err != nil) != tc.wantErr {
+				t.Errorf("makeBlacklist() error = %v, wantErr %v", err, tc.wantErr)
+			}
+
+			// If no error expected, validate the content
+			if !tc.wantErr {
+				if len(result) != len(tc.expectedKeys) {
+					t.Errorf("Expected map size %d, got %d", len(tc.expectedKeys), len(result))
+				}
+
+				// Check if all expected keys are in the result
+				for _, key := range tc.expectedKeys {
+					if _, exists := result[key]; !exists {
+						t.Errorf("Expected key %s to exist", key)
+					}
+				}
+
+				// Optionally, test the regex matching functionality
+				if key, exists := result["0-profanity"]; exists {
+					testString := "badword"
+					if !key[0].MatchString(testString) {
+						t.Errorf("Regex should match the string %s", testString)
+					}
+				}
+			}
+		})
+	}
+}
+
 func setupMockCSV() {
 	csvContent := "content,contentType,policy,tier\n" +
 		"test,regex,profanity,0\n" +
