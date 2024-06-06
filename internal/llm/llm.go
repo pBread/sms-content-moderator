@@ -5,10 +5,27 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/pBread/sms-content-moderator/internal/logger"
 	openai "github.com/sashabaranov/go-openai"
 )
+
+var (
+	openaiKey   string
+	openaiModel string = "gpt-4"
+
+	client *openai.Client
+	once   sync.Once
+)
+
+func init() {
+	openaiKey = os.Getenv("OPENAI_API_KEY")
+	openaiModel = os.Getenv("OPENAI_MODEL")
+	if openaiKey == "" {
+		logger.Fatal("Missing env variable: OPENAI_API_KEY")
+	}
+}
 
 // BuildPrompt constructs the prompt for content evaluation based on the base prompt and policies.
 func BuildPrompt(content string, policies []string) (string, error) {
@@ -58,10 +75,9 @@ func BuildPrompt(content string, policies []string) (string, error) {
 }
 
 func EvalPolicyViolation(content string) (string, error) {
-	openaiKey := os.Getenv("OPENAI_API_KEY")
-	openaiModel := os.Getenv("OPENAI_MODEL")
-
-	client := openai.NewClient(openaiKey)
+	once.Do(func() {
+		client = openai.NewClient(openaiKey)
+	})
 
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
