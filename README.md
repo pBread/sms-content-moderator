@@ -41,8 +41,8 @@ cp .env.example .env
 
 Open the .env file in a text editor and set the following variables:
 
-- OPENAI_API_KEY: Your OpenAI API key.
-- OPENAI_MODEL: The model identifier you intend to use (e.g., "gpt-4").
+- `OPENAI_API_KEY`: Your OpenAI API key.
+- `OPENAI_MODEL`: The model identifier you intend to use (e.g., "gpt-4").
 
 #### Run Application
 
