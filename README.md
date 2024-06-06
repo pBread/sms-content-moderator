@@ -2,7 +2,7 @@
 
 ## Overview
 
-The SMS Content Moderator is an open-source application designed to help businesses monitor and control the content of SMS messages. This service allows administrators to configure content moderation policies to evaluate messages for potentially inappropriate or restricted content.
+The SMS Content Moderator is a service designed to help businesses monitor and control the content of SMS messages. This service allows administrators to configure content moderation policies to evaluate messages for potentially inappropriate or restricted content.
 
 _Note: This app requires configuration for individual use cases (see [Configuring Content Rules](#configuring-content-rules)). This app does not gaurantee messages are compliant with SMS guidelines; rather, it serves as a supportive tool in compliance efforts._
 
