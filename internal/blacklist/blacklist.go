@@ -53,7 +53,10 @@ func Init(absoluteFilePath string) {
 		logger.Fatal("Malformed blacklist CSV: ", err.Error())
 	}
 
-	blacklist = makeBlacklist(blacklistEntries)
+	blacklist, err = makeBlacklist(blacklistEntries)
+	if err != nil {
+		logger.Fatal("Error making blacklist: ", err.Error())
+	}
 
 	verifyPolicyDocuments(blacklist) // fatal error if policy docs missing
 
@@ -109,7 +112,7 @@ func csvToEntries(csv [][]string) ([]CSVBlacklistEntry, error) {
 	return entries, nil
 }
 
-func makeBlacklist(blacklistEntries []CSVBlacklistEntry) map[string][]*regexp.Regexp {
+func makeBlacklist(blacklistEntries []CSVBlacklistEntry) (map[string][]*regexp.Regexp, error) {
 	regexMap := make(map[string][]*regexp.Regexp)
 	stringMap := make(map[string][]string) // temporary map to hold strings for each key
 
@@ -120,7 +123,7 @@ func makeBlacklist(blacklistEntries []CSVBlacklistEntry) map[string][]*regexp.Re
 		if contentType == "regex" {
 			re, err := regexp.Compile(entry.Content)
 			if err != nil {
-				logger.Fatal("Invalid regex: " + entry.Content)
+				return nil, fmt.Errorf("invalid regex in entry %s: %w", entry.Content, err)
 			}
 			regexMap[key] = append(regexMap[key], re)
 		} else if contentType == "string" {
@@ -134,12 +137,12 @@ func makeBlacklist(blacklistEntries []CSVBlacklistEntry) map[string][]*regexp.Re
 		pattern := "(?i)(" + strings.Join(strs, "|") + ")"
 		re, err := regexp.Compile(pattern)
 		if err != nil {
-			logger.Fatal("Invalid regex from strings: " + strings.Join(strs, ", "))
+			return nil, fmt.Errorf("invalid regex from strings at key %s: %w", key, err)
 		}
 		regexMap[key] = append(regexMap[key], re)
 	}
 
-	return regexMap
+	return regexMap, nil
 }
 
 func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
