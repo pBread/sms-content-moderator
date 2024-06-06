@@ -5,5 +5,3 @@ maybebadword,string,profanity,1
 (?i)m.*a.*y.*b.*e.*b.*a.*d.*w.*o.*r.*d.*,regex,profanity,1
 vape,string,vape,1
 casino,string,gambling,1
-casino,string,chocolate,1
-casino,string,banana,1
