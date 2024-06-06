@@ -100,8 +100,3 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 
   - Twilio is authenticated through the X-Twilio-Signature, see https://www.twilio.com/docs/usage/webhooks/webhooks-security#validating-signatures-from-twilio
   - You need to define the env variables CONVERSATIONS_PRE_EVENT_WEBHOOK_URL & TWILIO_AUTH_TOKEN
-
-The directory cmd/ has multiple examples of various deployments.
-
-- cmd/server is a simple server. Note: It doesn't have authentication
-- cmd/conversations shows a simple server example deployed for Twilio Conversations.
