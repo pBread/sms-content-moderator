@@ -43,19 +43,38 @@ func CheckContent(content string) []string {
 
 // Init initializes the blacklist from a CSV file at the specified absolute path.
 func Init(absoluteFilePath string) {
-	blacklist = buildBlacklist(absoluteFilePath)
+	csv, err := readCSV(absoluteFilePath)
+	if err != nil {
+		logger.Fatal("Unable to read Blacklist CSV: ", err.Error())
+	}
+
+	blacklistEntries := csvToEntries(csv)
+
+	blacklist = makeBlacklist(blacklistEntries)
+
 	verifyPolicyDocuments(blacklist) // fatal error if policy docs missing
 
 	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
 }
 
-func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
-	csv, err := readCSV(absoluteFilePath)
-	if err != nil {
-		logger.Fatal("Unable to read Blacklist CSV: ", err.Error())
-	}
-	blacklistEntries := csvToEntries(csv)
+func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
+	missingDocs := []string{}
 
+	for policy := range blacklist {
+		policyName := strings.SplitN(policy, "-", 2)[1] // Extract policy name from the key
+		policyFilePath := fmt.Sprintf("config/policies/%s.md", strings.TrimSpace(policyName))
+		if _, err := os.Stat(policyFilePath); os.IsNotExist(err) {
+			missingDocs = append(missingDocs, policyName)
+		}
+	}
+
+	if len(missingDocs) > 0 {
+		logger.Fatal("Unable to initialize blacklist due to missing policy documents: ", strings.Join(missingDocs, ", "))
+
+	}
+}
+
+func makeBlacklist(blacklistEntries []CSVBlacklistEntry) map[string][]*regexp.Regexp {
 	regexMap := make(map[string][]*regexp.Regexp)
 	stringMap := make(map[string][]string) // temporary map to hold strings for each key
 
@@ -86,6 +105,7 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 	}
 
 	return regexMap
+
 }
 
 func readCSV(filePath string) ([][]string, error) {
@@ -132,21 +152,4 @@ func csvToEntries(csv [][]string) []CSVBlacklistEntry {
 	}
 
 	return entries
-}
-
-func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
-	missingDocs := []string{}
-
-	for policy := range blacklist {
-		policyName := strings.SplitN(policy, "-", 2)[1] // Extract policy name from the key
-		policyFilePath := fmt.Sprintf("config/policies/%s.md", strings.TrimSpace(policyName))
-		if _, err := os.Stat(policyFilePath); os.IsNotExist(err) {
-			missingDocs = append(missingDocs, policyName)
-		}
-	}
-
-	if len(missingDocs) > 0 {
-		logger.Fatal("Unable to initialize blacklist due to missing policy documents: ", strings.Join(missingDocs, ", "))
-
-	}
 }

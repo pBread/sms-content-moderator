@@ -24,7 +24,6 @@ func TestReadCSV(t *testing.T) {
 	if len(result) != 3 {
 		t.Errorf("Expected 2 rows, got %d", len(result))
 	}
-
 }
 
 func setupMockCSV() {
