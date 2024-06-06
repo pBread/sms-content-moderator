@@ -98,5 +98,4 @@ func EvalPolicyViolation(content string) (string, error) {
 	}
 
 	return resp.Choices[0].Message.Content, nil
-
 }
