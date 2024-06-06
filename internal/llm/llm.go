@@ -3,10 +3,10 @@ package llm
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
+	"github.com/pBread/sms-content-moderator/internal/logger"
 	openai "github.com/sashabaranov/go-openai"
 )
 
@@ -15,11 +15,12 @@ func BuildPrompt(content string, policies []string) (string, error) {
 	// Read the base prompt from config/prompt.md
 	basePrompt, err := os.ReadFile("config/prompt.md")
 	if err != nil {
+		logger.Error("Error reading base prompt: ", err.Error())
 		return "", fmt.Errorf("failed to read base prompt: %v", err)
 	}
 
-	// Initialize variables to be injected into the prompt
 	policyNotes := ""
+	var errors []string // errors are collected in case multiple policy docs are missing
 
 	// Process each policy and gather the policy notes
 	for _, policy := range policies {
@@ -32,14 +33,20 @@ func BuildPrompt(content string, policies []string) (string, error) {
 		}
 
 		policyName = strings.TrimSpace(policyName)
-
 		policyFilePath := fmt.Sprintf("config/policies/%s.md", policyName)
-		if _, err := os.Stat(policyFilePath); err == nil {
-			policyContent, err := os.ReadFile(policyFilePath)
-			if err == nil {
-				policyNotes += fmt.Sprintf("\n\n===POLICY_ID:'%s'===\n%s", policyName, string(policyContent))
-			}
+
+		policyContent, err := os.ReadFile(policyFilePath)
+		if err != nil {
+			logger.Error("Error reading policy document", err.Error())
+			errors = append(errors, fmt.Sprintf("Failed to read policy document `%s`: %v", policyName, err))
+			continue
 		}
+
+		policyNotes += fmt.Sprintf("\n\n===POLICY_ID:'%s'===\n%s", policyName, string(policyContent))
+	}
+
+	if len(errors) > 0 {
+		return "", fmt.Errorf("Error(s) encountered building prompt: \n\t%s", strings.Join(errors, "\n\t"))
 	}
 
 	// Inject the content and policy variables into the base prompt
@@ -70,11 +77,9 @@ func EvalPolicyViolation(content string) (string, error) {
 	)
 
 	if err != nil {
-		log.Printf("ChatCompletion error: %v\n", err)
+		logger.Error("LLM API error: ", err.Error())
 		return "", err
 	}
-
-	log.Println(resp.Choices[0].Message.Content)
 
 	return resp.Choices[0].Message.Content, nil
 

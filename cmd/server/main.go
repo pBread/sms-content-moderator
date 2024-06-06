@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"path/filepath"
 	"runtime"
@@ -10,6 +9,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pBread/sms-content-moderator/internal/blacklist"
 	"github.com/pBread/sms-content-moderator/internal/llm"
+	"github.com/pBread/sms-content-moderator/internal/logger"
 )
 
 type RequestBody struct {
@@ -18,7 +18,7 @@ type RequestBody struct {
 
 func main() {
 	if err := godotenv.Load(); err != nil {
-		log.Fatal("Error loading .env file")
+		logger.Fatal("Error loading .env file")
 	}
 
 	projectRoot := getProjectRoot()
@@ -27,16 +27,15 @@ func main() {
 
 	http.HandleFunc("/evaluate-message", unauthenticatedHandler)
 
-	log.Println("starting on port" + ":8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
-
+	logger.Info("starting on port" + ":8080")
+	logger.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func getProjectRoot() string {
 	// retrieve the runtime file path
 	_, b, _, ok := runtime.Caller(0)
 	if !ok {
-		log.Fatal("Cannot retrieve runtime information")
+		logger.Fatal("Cannot retrieve runtime information")
 	}
 
 	// navigate up to the project root from current file (`cmd/server/main.go`)
@@ -53,7 +52,7 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 
 	var reqBody RequestBody
 	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
-		log.Println()
+		logger.Error("Error reading request body: ", err.Error())
 		http.Error(w, "Error reading request body", http.StatusBadRequest)
 		return
 	}
@@ -65,10 +64,14 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Println(prompt)
 
-	resp, _ := llm.EvalPolicyViolation(prompt)
-	log.Println(resp)
+	resp, err := llm.EvalPolicyViolation(prompt)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	logger.Info(resp)
 
 	w.Header().Set("Content-Type", "application/json")
 	response := map[string][]string{"Violations": violations}
