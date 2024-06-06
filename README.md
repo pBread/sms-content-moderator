@@ -68,7 +68,7 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 ### Blacklist Configuration
 
 - **Blacklist File**: The blacklist is defined in a CSV located at [config/blacklist.csv](config/blacklist.csv).
-- **CSV Format**: The CSV file <u>must include a header row</u> with the columns in this order: `Content`, `Content Type`, `Policy`, `Tier`. Each row represents one blacklist entry.
+- **CSV Format**: The CSV file **must include a header row** with the columns in this order: `Content`, `Content Type`, `Policy`, `Tier`. Each row represents one blacklist entry.
 
   - **Content**: The text or regex pattern (see [Go regex syntax](https://pkg.go.dev/regexp/syntax)) to match against.
   - **Content Type**: `regex` for regular expressions, `string` for direct string matches
@@ -81,22 +81,27 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 
 - **Customization**: You are encouraged to review and modify the provided policy documents to fit your use-case. You can also create new policies by adding corresponding entries to the blacklist CSV and creating new policy markdown files.
 
-# DEPRECATED
+# To Do
 
-## Docs to Add
+## Documentation
 
-- using message examples
+- Tips for building prompts:
+
+  - using message examples
+
 - API response format
 
-### Deployment Examples
+- Deploment Examples
+
+  - cmd/server is a simple server. Note: It doesn't have authentication
+  - cmd/conversations shows a simple server example deployed for Twilio Conversations.
+
+- Conversations example
+
+  - Twilio is authenticated through the X-Twilio-Signature, see https://www.twilio.com/docs/usage/webhooks/webhooks-security#validating-signatures-from-twilio
+  - You need to define the env variables CONVERSATIONS_PRE_EVENT_WEBHOOK_URL & TWILIO_AUTH_TOKEN
 
 The directory cmd/ has multiple examples of various deployments.
 
 - cmd/server is a simple server. Note: It doesn't have authentication
 - cmd/conversations shows a simple server example deployed for Twilio Conversations.
-
-### Twilio Conversations Example
-
-- Twilio is authenticated through the X-Twilio-Signature, see https://www.twilio.com/docs/usage/webhooks/webhooks-security#validating-signatures-from-twilio
-
-- You need to define the env variables CONVERSATIONS_PRE_EVENT_WEBHOOK_URL & TWILIO_AUTH_TOKEN
