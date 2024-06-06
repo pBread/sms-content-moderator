@@ -23,6 +23,30 @@ type CSVBlacklistEntry struct {
 // and each value is a list of compiled regex patterns for that category.
 var blacklist map[string][]*regexp.Regexp
 
+// Init initializes the blacklist from a CSV file at the specified absolute path.
+func Init(absoluteFilePath string) {
+	csv, err := readCSV(absoluteFilePath)
+	if err != nil {
+		logger.Fatal("Unable to read Blacklist CSV: ", err.Error())
+	}
+
+	blacklistEntries, err := csvToEntries(csv)
+	if err != nil {
+		logger.Fatal("Malformed blacklist CSV: ", err.Error())
+	}
+
+	blacklist, err = makeBlacklist(blacklistEntries)
+	if err != nil {
+		logger.Fatal("Error making blacklist: ", err.Error())
+	}
+
+	if err := verifyPolicyDocuments(blacklist); err != nil {
+		logger.Fatal("Error varifying policy documents: ", err.Error())
+	}
+
+	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
+}
+
 // CheckContent checks the specified content against the compiled blacklist and returns an array
 // of policies matched by the content. Policy matches are formatted like so: tier-policy,
 // e.g. ["0-profanity"].
@@ -41,18 +65,56 @@ func CheckContent(content string) []string {
 	return violations
 }
 
-// Init initializes the blacklist from a CSV file at the specified absolute path.
-func Init(absoluteFilePath string) {
-	blacklist = buildBlacklist(absoluteFilePath)
-	verifyPolicyDocuments(blacklist) // fatal error if policy docs missing
+func readCSV(filePath string) ([][]string, error) {
+	file, err := os.Open(filePath)
+	if err != nil {
+		logger.Fatal("Unable to open file: " + err.Error())
+		return nil, fmt.Errorf("unable to open file: %w", err)
+	}
+	defer file.Close()
 
-	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
+	reader := csv.NewReader(bufio.NewReader(file))
+	data, err := reader.ReadAll()
+	if err != nil {
+		logger.Fatal("Unable to read CSV data: " + err.Error())
+		return nil, fmt.Errorf("unable to open file: %w", err)
+	}
+
+	return data, nil
 }
 
-func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
-	csv := readCSV(absoluteFilePath)
-	blacklistEntries := csvToEntries(csv)
+func csvToEntries(csv [][]string) ([]CSVBlacklistEntry, error) {
+	var entries []CSVBlacklistEntry
 
+	if len(csv) == 0 {
+		return nil, fmt.Errorf("csv is empty")
+	}
+
+	for i, row := range csv {
+		if i == 0 { // Skip header
+			continue
+		}
+		if len(row) != 4 {
+			return nil, fmt.Errorf("CSV row %d does not contain exactly 4 columns", i)
+		}
+
+		tier, err := strconv.Atoi(row[3])
+		if err != nil {
+			return nil, fmt.Errorf("invalid tier value at row %d: %w", i, err)
+		}
+
+		entry := CSVBlacklistEntry{
+			Content:     row[0],
+			ContentType: row[1],
+			Policy:      strings.ToLower(row[2]),
+			Tier:        tier,
+		}
+		entries = append(entries, entry)
+	}
+	return entries, nil
+}
+
+func makeBlacklist(blacklistEntries []CSVBlacklistEntry) (map[string][]*regexp.Regexp, error) {
 	regexMap := make(map[string][]*regexp.Regexp)
 	stringMap := make(map[string][]string) // temporary map to hold strings for each key
 
@@ -63,7 +125,7 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 		if contentType == "regex" {
 			re, err := regexp.Compile(entry.Content)
 			if err != nil {
-				logger.Fatal("Invalid regex: " + entry.Content)
+				return nil, fmt.Errorf("invalid regex in entry %s: %w", entry.Content, err)
 			}
 			regexMap[key] = append(regexMap[key], re)
 		} else if contentType == "string" {
@@ -77,59 +139,15 @@ func buildBlacklist(absoluteFilePath string) map[string][]*regexp.Regexp {
 		pattern := "(?i)(" + strings.Join(strs, "|") + ")"
 		re, err := regexp.Compile(pattern)
 		if err != nil {
-			logger.Fatal("Invalid regex from strings: " + strings.Join(strs, ", "))
+			return nil, fmt.Errorf("invalid regex from strings at key %s: %w", key, err)
 		}
 		regexMap[key] = append(regexMap[key], re)
 	}
 
-	return regexMap
+	return regexMap, nil
 }
 
-func readCSV(filePath string) [][]string {
-	file, err := os.Open(filePath)
-	if err != nil {
-		logger.Fatal("Unable to open file: " + err.Error())
-	}
-	defer file.Close()
-
-	reader := csv.NewReader(bufio.NewReader(file))
-	data, err := reader.ReadAll()
-	if err != nil {
-		logger.Fatal("Unable to read CSV data: " + err.Error())
-	}
-
-	return data
-}
-
-func csvToEntries(csv [][]string) []CSVBlacklistEntry {
-	var entries []CSVBlacklistEntry
-
-	for i, row := range csv {
-		if i == 0 {
-			continue
-		}
-		if len(row) != 4 {
-			logger.Fatal("CSV row does not contain exactly 4 columns.")
-		}
-
-		tier, err := strconv.Atoi(row[3])
-		if err != nil {
-			logger.Fatal("Invalid tier value: " + row[3])
-		}
-
-		entry := CSVBlacklistEntry{
-			Content:     row[0],
-			ContentType: row[1],
-			Policy:      strings.ToLower(row[2]),
-			Tier:        tier,
-		}
-		entries = append(entries, entry)
-	}
-
-	return entries
-}
-
-func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
+func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) error {
 	missingDocs := []string{}
 
 	for policy := range blacklist {
@@ -141,7 +159,8 @@ func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) {
 	}
 
 	if len(missingDocs) > 0 {
-		logger.Fatal("Unable to initialize blacklist due to missing policy documents: ", strings.Join(missingDocs, ", "))
-
+		return fmt.Errorf("unable to initialize blacklist due to missing policy documents: %s", strings.Join(missingDocs, ", "))
 	}
+
+	return nil
 }
