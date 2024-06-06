@@ -61,13 +61,25 @@ curl -X POST \
 
 ## Configuring Content Rules
 
-### Overview
-
 Configuration of the SMS Content Moderator involves setting up [blacklist](config/blacklist.csv) entries and [policy documents](config/policies/) to define what content is checked and how it is evaluated.
 
 _Important: The provided blacklist and policy documents serve as examples and must be customized to the intended use-case._
 
 ### Blacklist Configuration
+
+- **Blacklist File**: The blacklist is defined in a CSV located at [config/blacklist.csv](config/blacklist.csv).
+- **CSV Format**: The CSV file <u>must include a header row</u> with the columns in this order: `Content`, `Content Type`, `Policy`, `Tier`. Each row represents one blacklist entry.
+
+  - **Content**:
+  - **Content Type**:
+  - **Policy**:
+  - **Tier**:
+
+### Policy Documents
+
+- **Location and Naming**: Each policy referred to in the `Policy` column of the blacklist must have a corresponding markdown document in the [config/policies](config/policies) directory. For example, if a blacklist entry has the policy `profanity` then there must be a document describing that policy located here: [config/policies/profanity.md](config/policies/profanity.md)
+
+- **Customization**: You are encouraged to review and modify the provided policy documents to fit your use-case. You can also create new policies by adding corresponding entries to the blacklist CSV and creating new policy markdown files.
 
 # DEPRECATED
 
