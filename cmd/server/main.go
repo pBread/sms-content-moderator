@@ -25,7 +25,7 @@ func main() {
 	csvPath := filepath.Join(projectRoot, "/config/blacklist.csv")
 	blacklist.Init(csvPath)
 
-	http.HandleFunc("/dev", unauthenticatedHandler)
+	http.HandleFunc("/evaluate-message", unauthenticatedHandler)
 
 	log.Println("starting on port" + ":8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
