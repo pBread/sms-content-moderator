@@ -115,7 +115,6 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 				overallStatus = "fail"
 			}
 		}
-
 	}
 
 	response := Response{
