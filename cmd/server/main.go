@@ -25,7 +25,6 @@ type Evaluation struct {
 
 type Response struct {
 	Status      string       `json:"status"`
-	Matches     []string     `json:"matches"`
 	Evaluations []Evaluation `json:"evaluations"`
 }
 
@@ -121,7 +120,6 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 
 	response := Response{
 		Status:      overallStatus,
-		Matches:     blacklistMatches,
 		Evaluations: evaluations,
 	}
 
