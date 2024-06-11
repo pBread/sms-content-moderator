@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/pBread/sms-content-moderator/internal/blacklist"
-	"github.com/pBread/sms-content-moderator/internal/llm"
 	"github.com/pBread/sms-content-moderator/internal/logger"
 )
 
@@ -52,6 +51,8 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 	evaluations := []Evaluation{}
 	overallStatus := "pass"
 
+	tier0Present := false
+
 	for _, match := range blacklistMatches {
 		split := strings.Split(match, "-")
 		tier, _ := strconv.Atoi(split[0])
@@ -66,36 +67,14 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 				Reasoning: "Tier 0 blacklist entry matched, which is automatically a policy violation.",
 			})
 			overallStatus = "fail"
+			tier0Present = true
 		}
 	}
 
-	if overallStatus == "pass" {
-		prompt, err := llm.BuildPrompt(reqBody.Message, blacklistMatches)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+	if tier0Present { // generate 'not-evaluated' records for Tier 1 if Tier 0 is present
 
-		llmResp, err := llm.EvalPolicyViolation(prompt)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
+	} else if overallStatus == "pass" { // evaluate Tier 1 if no Tier 0 is present
 
-		var llmEvaluations []Evaluation
-		if err := json.Unmarshal([]byte(llmResp), &llmEvaluations); err != nil {
-			logger.Error("Error parsing LLM response: ", err.Error())
-			http.Error(w, "Error parsing LLM response", http.StatusInternalServerError)
-			return
-		}
-
-		for _, eval := range llmEvaluations {
-			eval.Key = "1-" + eval.Policy
-			evaluations = append(evaluations, eval)
-			if eval.Status == "is-violation" {
-				overallStatus = "fail"
-			}
-		}
 	}
 
 	response := Response{
