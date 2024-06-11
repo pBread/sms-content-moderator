@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/pBread/sms-content-moderator/internal/blacklist"
+	"github.com/pBread/sms-content-moderator/internal/llm"
 	"github.com/pBread/sms-content-moderator/internal/logger"
 )
 
@@ -86,6 +87,32 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	} else if overallStatus == "pass" { // evaluate Tier 1 if no Tier 0 is present
+		prompt, err := llm.BuildPrompt(reqBody.Message, blacklistMatches)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		llmResp, err := llm.EvalPolicyViolation(prompt)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		var llmEvaluations []Evaluation
+		if err := json.Unmarshal([]byte(llmResp), &llmEvaluations); err != nil {
+			logger.Error("Error parsing LLM response: ", err.Error())
+			http.Error(w, "Error parsing LLM response", http.StatusInternalServerError)
+			return
+		}
+
+		for _, eval := range llmEvaluations {
+			eval.Key = "1-" + eval.Policy
+			evaluations = append(evaluations, eval)
+			if eval.Status == "is-violation" {
+				overallStatus = "fail"
+			}
+		}
 
 	}
 
