@@ -22,7 +22,6 @@ type Response struct {
 }
 
 // EvaluateContent checks the provided content against a set of blacklist rules and evaluates for policy violations using a tier-based system.
-
 func EvaluateContent(content string) (Response, error) {
 	// checks message for blacklist entry matches
 	// returns []"{tier}-{policy}", e.g. ["0-profanity", "1-gambling"]
