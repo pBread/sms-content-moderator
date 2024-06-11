@@ -83,6 +83,8 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 
 ## Interacting with the SMS Content Moderator API
 
+The SMS Content Moderator is deployed as an API.
+
 **Response Payload**
 
 | Field         | Type                                      | Description                                                                                                                    |
@@ -103,11 +105,90 @@ Details about the evaluation of a specific piece of content against a defined po
 
 ### Examples
 
-#### Example 1: Pass Without Violations
+#### Pass Without Violations
 
 ```json
 {
   "status": "pass",
   "evaluations": []
+}
+```
+
+### Fail with Tier 0 Violation
+
+```json
+{
+  "status": "fail",
+  "evaluations": [
+    {
+      "status": "is-violation",
+      "key": "0-profanity",
+      "policy": "profanity",
+      "tier": 0,
+      "reasoning": "Tier 0 blacklist entry was matched, which is automatically a policy violation."
+    }
+  ]
+}
+```
+
+#### Pass with Tier 1 Blacklist Entry Matched
+
+Tier 1 blacklist entries represent words that indicate a potential violation without
+
+```json
+{
+  "status": "pass",
+  "evaluations": [
+    {
+      "status": "not-violation",
+      "key": "1-gambling",
+      "policy": "gambling",
+      "tier": 1,
+      "reasoning": "The content is an invitation to a concert at a hotel and casino. It does not promote or facilitate gambling but mentions a casino as the venue for an event, which is a different context."
+    }
+  ]
+}
+```
+
+### Fail with Tier 1 Violation
+
+```json
+{
+  "status": "fail",
+  "evaluations": [
+    {
+      "status": "is-violation",
+      "key": "1-gambling",
+      "policy": "gambling",
+      "tier": 1,
+      "reasoning": "The message encourages and promotes gambling activity at a casino, which is against the policy."
+    }
+  ]
+}
+```
+
+### Fail with Tier 0 & Tier 1 Violations
+
+Tier 1 blacklist entries signify a content policy has been violated. Tier 1 blacklist entries will not be evaluated because it is assumed that a Tier 0 violation will trigger a total rejection.
+
+```json
+{
+  "status": "fail",
+  "evaluations": [
+    {
+      "status": "is-violation",
+      "key": "0-profanity",
+      "policy": "profanity",
+      "tier": 0,
+      "reasoning": "Tier 0 blacklist entry was matched, which is automatically a policy violation."
+    },
+    {
+      "status": "not-evaluated",
+      "key": "1-gambling",
+      "policy": "gambling",
+      "tier": 1,
+      "reasoning": "Message content included a Tier 0 blacklist violation and there is no reason to evaluate Tier 1 policies."
+    }
+  ]
 }
 ```
