@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/joho/godotenv"
 	"github.com/pBread/sms-content-moderator/internal/logger"
 	openai "github.com/sashabaranov/go-openai"
 )
@@ -20,6 +21,10 @@ var (
 )
 
 func init() {
+	if err := godotenv.Load(); err != nil {
+		logger.Fatal("Error loading .env file")
+	}
+
 	openaiKey = os.Getenv("OPENAI_API_KEY")
 	openaiModel = os.Getenv("OPENAI_MODEL")
 	if openaiKey == "" {
