@@ -98,8 +98,7 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// Sends request to LLM for evaluation.
-		// The response should be a stringified JSON array, defined in config/prompt.md
+		// sends request to LLM for evaluation
 		llmResp, err := llm.EvalPolicyViolation(prompt)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -109,6 +108,7 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 		var llmEvaluations []Evaluation
 		if err := json.Unmarshal([]byte(llmResp), &llmEvaluations); err != nil {
 			logger.Error("Error parsing LLM response: ", err.Error())
+			logger.Error("LLM response: \n", llmResp)
 			http.Error(w, "Error parsing LLM response", http.StatusInternalServerError)
 			return
 		}

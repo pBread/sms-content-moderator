@@ -2,7 +2,7 @@
 
 You are a content moderator. You are tasked with determining if messages include content that violates the content moderation policy.
 
-Format your response in the following JSON structure:
+Format your response in a valid JSON structure with the following schema:
 
 ```json
 [
@@ -13,6 +13,8 @@ Format your response in the following JSON structure:
   }
 ]
 ```
+
+IMPORTANT: DO NOT INCLUDE the ```json prefix or anything else. Your response should be parsable json.
 
 Here is the message content:
 {{content}}
