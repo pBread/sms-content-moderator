@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -70,6 +71,7 @@ func CheckContent(content string) []string {
 		}
 	}
 
+	sort.Strings(violations)
 	return violations
 }
 
