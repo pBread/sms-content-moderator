@@ -72,7 +72,8 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if tier0Present { // generate 'not-evaluated' records for Tier 1 if Tier 0 is present
+	if tier0Present {
+		// generate 'not-evaluated' records for Tier 1 if Tier 0 is present
 		for _, match := range blacklistMatches {
 			split := strings.Split(match, "-")
 			tier, _ := strconv.Atoi(split[0])
@@ -86,7 +87,8 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 				})
 			}
 		}
-	} else if overallStatus == "pass" { // evaluate Tier 1 if no Tier 0 is present
+	} else if overallStatus == "pass" {
+		// evaluate Tier 1 if no Tier 0 is present
 		prompt, err := llm.BuildPrompt(reqBody.Message, blacklistMatches)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
