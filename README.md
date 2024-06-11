@@ -80,3 +80,116 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 - **Location and Naming**: Each policy referred to in the `Policy` column of the blacklist must have a corresponding markdown document in the [config/policies](config/policies) directory. For example, if a blacklist entry has the policy `profanity` then there must be a document describing that policy located here: [config/policies/profanity.md](config/policies/profanity.md)
 
 - **Customization**: You are encouraged to review and modify the provided policy documents to fit your use-case. You can also create new policies by adding corresponding entries to the blacklist CSV and creating new policy markdown files.
+
+## Interacting with the SMS Content Moderator API
+
+The SMS Content Moderator is designed to function as an API that integrates into a messaging application. Below are the detailed specifications and examples of how the API processes and evaluates messages.
+
+### Response Payload
+
+| Field         | Type                                      | Description                                                                                                                    |
+| ------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `status`      | string                                    | Overall status of the content evaluation. Possible values: `"pass"`, `"fail"`. Indicates whether any violations were detected. |
+| `evaluations` | Array of [Evaluation](#evaluation-object) | A list of evaluation results for specific policies and tiers.                                                                  |
+
+#### Evaluation Schema
+
+Details about the evaluation of a specific piece of content against a defined policy and tier.
+
+| Field       | Type   | Description                                                                                                                                                    |
+| ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`    | string | The outcome of the evaluation for this policy. Values: `"is-violation"`, `"not-evaluated"`, and others as applicable.                                          |
+| `key`       | string | A composite key representing the tier and policy, formatted as `"{tier}-{policy}"`.                                                                            |
+| `policy`    | string | The name of the policy that was evaluated.                                                                                                                     |
+| `tier`      | int    | The severity tier of the violation (`0` or `1`). Tier 0 indicates severe violations leading to immediate rejection, while Tier 1 violations depend on context. |
+| `reasoning` | string | Explanation of the evaluation outcome, providing context or justification for the result.                                                                      |
+
+### Examples
+
+#### Pass Without Violations
+
+```json
+{
+  "status": "pass",
+  "evaluations": []
+}
+```
+
+### Fail with Tier 0 Violation
+
+```json
+{
+  "status": "fail",
+  "evaluations": [
+    {
+      "status": "is-violation",
+      "key": "0-profanity",
+      "policy": "profanity",
+      "tier": 0,
+      "reasoning": "Tier 0 blacklist entry was matched, which is automatically a policy violation."
+    }
+  ]
+}
+```
+
+#### Pass with Tier 1 Blacklist Entry Matched
+
+Tier 1 blacklist entries represent words that indicate a potential violation without
+
+```json
+{
+  "status": "pass",
+  "evaluations": [
+    {
+      "status": "not-violation",
+      "key": "1-gambling",
+      "policy": "gambling",
+      "tier": 1,
+      "reasoning": "The content is an invitation to a concert at a hotel and casino. It does not promote or facilitate gambling but mentions a casino as the venue for an event, which is a different context."
+    }
+  ]
+}
+```
+
+### Fail with Tier 1 Violation
+
+```json
+{
+  "status": "fail",
+  "evaluations": [
+    {
+      "status": "is-violation",
+      "key": "1-gambling",
+      "policy": "gambling",
+      "tier": 1,
+      "reasoning": "The message encourages and promotes gambling activity at a casino, which is against the policy."
+    }
+  ]
+}
+```
+
+### Fail with Tier 0 & Tier 1 Violations
+
+Tier 1 blacklist entries signify a content policy has been violated. Tier 1 blacklist entries will not be evaluated because it is assumed that a Tier 0 violation will trigger a total rejection.
+
+```json
+{
+  "status": "fail",
+  "evaluations": [
+    {
+      "status": "is-violation",
+      "key": "0-profanity",
+      "policy": "profanity",
+      "tier": 0,
+      "reasoning": "Tier 0 blacklist entry was matched, which is automatically a policy violation."
+    },
+    {
+      "status": "not-evaluated",
+      "key": "1-gambling",
+      "policy": "gambling",
+      "tier": 1,
+      "reasoning": "Message content included a Tier 0 blacklist violation and there is no reason to evaluate Tier 1 policies."
+    }
+  ]
+}
+```
