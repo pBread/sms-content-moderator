@@ -83,16 +83,17 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 
 ## Interacting with the SMS Content Moderator API
 
-The SMS Content Moderator is deployed as an API.
+The SMS Content Moderator is designed to function as an API that integrates into a messaging application. Below are the detailed specifications and examples of how the API processes and evaluates messages.
 
-**Response Payload**
+### Response Payload
 
 | Field         | Type                                      | Description                                                                                                                    |
 | ------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `status`      | string                                    | Overall status of the content evaluation. Possible values: `"pass"`, `"fail"`. Indicates whether any violations were detected. |
 | `evaluations` | Array of [Evaluation](#evaluation-object) | A list of evaluation results for specific policies and tiers.                                                                  |
 
-**Evaluation Schema**
+#### Evaluation Schema
+
 Details about the evaluation of a specific piece of content against a defined policy and tier.
 
 | Field       | Type   | Description                                                                                                                                                    |
