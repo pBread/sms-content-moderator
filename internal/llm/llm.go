@@ -2,6 +2,7 @@ package llm
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -79,7 +80,13 @@ func BuildPrompt(content string, policies []string) (string, error) {
 	return prompt, nil
 }
 
-func EvalPolicyViolation(content string) (string, error) {
+type PolicyEvaluation struct {
+	Policy    string `json:"policy"`
+	Status    string `json:"status"`
+	Reasoning string `json:"reasoning"`
+}
+
+func EvalPolicyViolation(content string) ([]PolicyEvaluation, error) {
 	once.Do(func() {
 		client = openai.NewClient(openaiKey)
 	})
@@ -99,7 +106,7 @@ func EvalPolicyViolation(content string) (string, error) {
 
 	if err != nil {
 		logger.Error("LLM API error: ", err.Error())
-		return "", err
+		return nil, err
 	}
 
 	llmContent := resp.Choices[0].Message.Content
@@ -107,5 +114,11 @@ func EvalPolicyViolation(content string) (string, error) {
 	llmContent = strings.TrimPrefix(llmContent, "```json")
 	llmContent = strings.TrimSuffix(llmContent, "```")
 
-	return llmContent, nil
+	var violations []PolicyEvaluation
+	if err := json.Unmarshal([]byte(llmContent), &violations); err != nil {
+		logger.Error("Error parsing JSON: ", err.Error())
+		return nil, err
+	}
+
+	return violations, nil
 }

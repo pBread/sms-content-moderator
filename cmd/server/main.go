@@ -99,24 +99,21 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// sends request to LLM for evaluation
-		llmResp, err := llm.EvalPolicyViolation(prompt)
+		llmViolations, err := llm.EvalPolicyViolation(prompt)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		var llmEvaluations []Evaluation
-		if err := json.Unmarshal([]byte(llmResp), &llmEvaluations); err != nil {
-			logger.Error("Error parsing LLM response: ", err.Error())
-			logger.Error("LLM response: \n", llmResp)
-			http.Error(w, "Error parsing LLM response", http.StatusInternalServerError)
-			return
-		}
-
-		for _, eval := range llmEvaluations {
-			eval.Key = "1-" + eval.Policy
-			evaluations = append(evaluations, eval)
-			if eval.Status == "is-violation" {
+		for _, violation := range llmViolations {
+			evaluations = append(evaluations, Evaluation{
+				Status:    violation.Status,
+				Key:       "1-" + violation.Policy,
+				Policy:    violation.Policy,
+				Tier:      1,
+				Reasoning: violation.Reasoning,
+			})
+			if violation.Status == "is-violation" {
 				overallStatus = "fail"
 			}
 		}
