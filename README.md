@@ -80,3 +80,34 @@ _Important: The provided blacklist and policy documents serve as examples and mu
 - **Location and Naming**: Each policy referred to in the `Policy` column of the blacklist must have a corresponding markdown document in the [config/policies](config/policies) directory. For example, if a blacklist entry has the policy `profanity` then there must be a document describing that policy located here: [config/policies/profanity.md](config/policies/profanity.md)
 
 - **Customization**: You are encouraged to review and modify the provided policy documents to fit your use-case. You can also create new policies by adding corresponding entries to the blacklist CSV and creating new policy markdown files.
+
+## Interacting with the SMS Content Moderator API
+
+**Response Payload**
+
+| Field         | Type                                      | Description                                                                                                                    |
+| ------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `status`      | string                                    | Overall status of the content evaluation. Possible values: `"pass"`, `"fail"`. Indicates whether any violations were detected. |
+| `evaluations` | Array of [Evaluation](#evaluation-object) | A list of evaluation results for specific policies and tiers.                                                                  |
+
+**Evaluation Schema**
+Details about the evaluation of a specific piece of content against a defined policy and tier.
+
+| Field       | Type   | Description                                                                                                                                                    |
+| ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `status`    | string | The outcome of the evaluation for this policy. Values: `"is-violation"`, `"not-evaluated"`, and others as applicable.                                          |
+| `key`       | string | A composite key representing the tier and policy, formatted as `"{tier}-{policy}"`.                                                                            |
+| `policy`    | string | The name of the policy that was evaluated.                                                                                                                     |
+| `tier`      | int    | The severity tier of the violation (`0` or `1`). Tier 0 indicates severe violations leading to immediate rejection, while Tier 1 violations depend on context. |
+| `reasoning` | string | Explanation of the evaluation outcome, providing context or justification for the result.                                                                      |
+
+### Examples
+
+#### Example 1: Pass Without Violations
+
+```json
+{
+  "status": "pass",
+  "evaluations": []
+}
+```
