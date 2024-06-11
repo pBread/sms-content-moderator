@@ -48,7 +48,10 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// checks message for blacklist entry matches
+	// returns []"{tier}-{policy}", e.g. ["0-profanity", "1-gambling"]
 	blacklistMatches := blacklist.CheckContent(reqBody.Message)
+
 	evaluations := []Evaluation{}
 	overallStatus := "pass"
 
@@ -65,7 +68,7 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 				Key:       match,
 				Policy:    policy,
 				Tier:      tier,
-				Reasoning: "Tier 0 blacklist entry matched, which is automatically a policy violation.",
+				Reasoning: "Tier 0 blacklist entry was matched, which is automatically a policy violation.",
 			})
 			overallStatus = "fail"
 			tier0Present = true
@@ -95,6 +98,8 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		// Sends request to LLM for evaluation.
+		// The response should be a stringified JSON array, defined in config/prompt.md
 		llmResp, err := llm.EvalPolicyViolation(prompt)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
