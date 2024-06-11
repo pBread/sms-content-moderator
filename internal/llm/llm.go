@@ -102,5 +102,10 @@ func EvalPolicyViolation(content string) (string, error) {
 		return "", err
 	}
 
-	return resp.Choices[0].Message.Content, nil
+	llmContent := resp.Choices[0].Message.Content
+	// LLM sometimes responds with the markdown included: ```json ... ```
+	llmContent = strings.TrimPrefix(llmContent, "```json")
+	llmContent = strings.TrimSuffix(llmContent, "```")
+
+	return llmContent, nil
 }
