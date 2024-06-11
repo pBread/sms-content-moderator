@@ -72,7 +72,19 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if tier0Present { // generate 'not-evaluated' records for Tier 1 if Tier 0 is present
-
+		for _, match := range blacklistMatches {
+			split := strings.Split(match, "-")
+			tier, _ := strconv.Atoi(split[0])
+			if tier == 1 {
+				evaluations = append(evaluations, Evaluation{
+					Status:    "not-evaluated",
+					Key:       match,
+					Policy:    split[1],
+					Tier:      tier,
+					Reasoning: "Message content included a Tier 0 blacklist violation and there is no reason to evaluate Tier 1 policies.",
+				})
+			}
+		}
 	} else if overallStatus == "pass" { // evaluate Tier 1 if no Tier 0 is present
 
 	}
