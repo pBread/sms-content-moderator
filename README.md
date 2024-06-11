@@ -98,7 +98,7 @@ Details about the evaluation of a specific piece of content against a defined po
 
 | Field       | Type   | Description                                                                                                                                                    |
 | ----------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `status`    | string | The outcome of the evaluation for this policy. Values: `"is-violation"`, `"not-evaluated"`, and others as applicable.                                          |
+| `status`    | string | The outcome of the evaluation for this policy. Values: `"is-violation"`, `"not-violation"`, `"not-evaluated"`.                                                 |
 | `key`       | string | A composite key representing the tier and policy, formatted as `"{tier}-{policy}"`.                                                                            |
 | `policy`    | string | The name of the policy that was evaluated.                                                                                                                     |
 | `tier`      | int    | The severity tier of the violation (`0` or `1`). Tier 0 indicates severe violations leading to immediate rejection, while Tier 1 violations depend on context. |
