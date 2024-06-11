@@ -8,9 +8,8 @@ Format your response in the following JSON structure:
 [
   {
     "policy": "string", // policy id
-    "isViolation": "boolean",
-    "reasoning": "string", // a description of your rationale
-    "confidence": "number" // 0-1 how likely the message is a violation
+    "status": "string", // "is-violation" | "not-violation",
+    "reasoning": "string" // a description of your rationale
   }
 ]
 ```
