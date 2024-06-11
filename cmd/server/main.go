@@ -3,10 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
-	"path/filepath"
-	"runtime"
 
-	"github.com/joho/godotenv"
 	"github.com/pBread/sms-content-moderator/internal/blacklist"
 	"github.com/pBread/sms-content-moderator/internal/llm"
 	"github.com/pBread/sms-content-moderator/internal/logger"
@@ -16,34 +13,11 @@ type RequestBody struct {
 	Message string `json:"Message"`
 }
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		logger.Fatal("Error loading .env file")
-	}
-
-	projectRoot := getProjectRoot()
-	csvPath := filepath.Join(projectRoot, "/config/blacklist.csv")
-	blacklist.Init(csvPath)
-}
-
 func main() {
 	http.HandleFunc("/evaluate-message", unauthenticatedHandler)
 	logger.Info("Starting on port" + ":8080")
 
 	logger.Fatal(http.ListenAndServe(":8080", nil))
-}
-
-func getProjectRoot() string {
-	// retrieve the runtime file path
-	_, b, _, ok := runtime.Caller(0)
-	if !ok {
-		logger.Fatal("Cannot retrieve runtime information")
-	}
-
-	// navigate up to the project root from current file (`cmd/server/main.go`)
-	projectRoot := filepath.Dir(filepath.Dir(filepath.Dir(b)))
-
-	return projectRoot
 }
 
 func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {

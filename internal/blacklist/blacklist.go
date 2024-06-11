@@ -5,10 +5,13 @@ import (
 	"encoding/csv"
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/pBread/sms-content-moderator/internal/logger"
 )
 
@@ -23,9 +26,14 @@ type CSVBlacklistEntry struct {
 // and each value is a list of compiled regex patterns for that category.
 var blacklist map[string][]*regexp.Regexp
 
-// Init initializes the blacklist from a CSV file at the specified absolute path.
-func Init(absoluteFilePath string) {
-	csv, err := readCSV(absoluteFilePath)
+func init() {
+	if err := godotenv.Load(); err != nil {
+		logger.Fatal("Error loading .env file")
+	}
+
+	csvPath := getCsvPath()
+
+	csv, err := readCSV(csvPath)
 	if err != nil {
 		logger.Fatal("Unable to read Blacklist CSV: ", err.Error())
 	}
@@ -44,7 +52,7 @@ func Init(absoluteFilePath string) {
 		logger.Fatal("Error varifying policy documents: ", err.Error())
 	}
 
-	logger.Info("Successfully initialized blacklist: " + absoluteFilePath)
+	logger.Info("Successfully initialized blacklist: " + csvPath)
 }
 
 // CheckContent checks the specified content against the compiled blacklist and returns an array
@@ -163,4 +171,22 @@ func verifyPolicyDocuments(blacklist map[string][]*regexp.Regexp) error {
 	}
 
 	return nil
+}
+
+func getCsvPath() string {
+	csvRelPath := os.Getenv("BLACKLIST_CSV_PATH")
+	if csvRelPath == "" {
+		csvRelPath = "/config/blacklist.csv"
+	}
+
+	// retrieve the runtime file path
+	_, b, _, ok := runtime.Caller(0)
+	if !ok {
+		logger.Fatal("Cannot retrieve runtime information")
+	}
+
+	// navigate up to the project root from current file (`internal/blacklist/blacklist.go`)
+	projectRoot := filepath.Dir(filepath.Dir(filepath.Dir(b)))
+
+	return filepath.Join(projectRoot, csvRelPath)
 }
