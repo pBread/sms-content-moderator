@@ -8,6 +8,12 @@ import (
 	"github.com/pBread/sms-content-moderator/internal/llm"
 )
 
+type Evaluator interface {
+	EvaluateContent(content string) (Response, error)
+}
+
+type ContentEvaluator struct{}
+
 type Evaluation struct {
 	Status    string `json:"status"`
 	Key       string `json:"key"`
@@ -22,7 +28,7 @@ type Response struct {
 }
 
 // EvaluateContent checks the provided content against a set of blacklist rules and evaluates for policy violations using a tier-based system.
-func EvaluateContent(content string) (Response, error) {
+func (ce ContentEvaluator) EvaluateContent(content string) (Response, error) {
 	// checks message for blacklist entry matches
 	// returns []"{tier}-{policy}", e.g. ["0-profanity", "1-gambling"]
 	blacklistMatches := blacklist.Match(content)

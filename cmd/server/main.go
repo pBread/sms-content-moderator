@@ -12,6 +12,8 @@ type RequestBody struct {
 	Message string `json:"Message"`
 }
 
+var eval evaluator.Evaluator = evaluator.ContentEvaluator{}
+
 func main() {
 	http.HandleFunc("/evaluate-message", unauthenticatedHandler)
 	logger.Info("Starting on port" + ":8080")
@@ -31,7 +33,7 @@ func unauthenticatedHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response, err := evaluator.EvaluateContent(reqBody.Message)
+	response, err := eval.EvaluateContent(reqBody.Message)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
