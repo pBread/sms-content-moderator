@@ -70,13 +70,7 @@ func EvaluateContent(content string) (Response, error) {
 		}
 	} else if result.Status == "pass" {
 		// evaluate Tier 1 if no Tier 0 is present
-		prompt, err := llm.BuildPrompt(content, blacklistMatches)
-		if err != nil {
-			return result, err
-		}
-
-		// sends request to LLM for evaluation
-		llmViolations, err := llm.EvalPolicyViolation(prompt)
+		llmViolations, err := llm.AskLLM(content, blacklistMatches)
 		if err != nil {
 			return result, err
 		}

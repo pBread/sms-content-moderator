@@ -33,8 +33,29 @@ func init() {
 	}
 }
 
-// BuildPrompt constructs the prompt for content evaluation based on the base prompt and policies.
-func BuildPrompt(content string, policies []string) (string, error) {
+type PolicyEvaluation struct {
+	Policy    string `json:"policy"`
+	Status    string `json:"status"`
+	Reasoning string `json:"reasoning"`
+}
+
+func AskLLM(content string, matchedPolicies []string) ([]PolicyEvaluation, error) {
+	prompt, err := buildPrompt(content, matchedPolicies)
+	if err != nil {
+		return nil, err
+	}
+
+	evaluations, err := sendToLLM(prompt)
+	if err != nil {
+		return nil, err
+	}
+
+	return evaluations, nil
+
+}
+
+// buildPrompt constructs the prompt for content evaluation based on the base prompt and policies.
+func buildPrompt(content string, policies []string) (string, error) {
 	// Read the base prompt from config/prompt.md
 	basePrompt, err := os.ReadFile("config/prompt.md")
 	if err != nil {
@@ -80,13 +101,8 @@ func BuildPrompt(content string, policies []string) (string, error) {
 	return prompt, nil
 }
 
-type PolicyEvaluation struct {
-	Policy    string `json:"policy"`
-	Status    string `json:"status"`
-	Reasoning string `json:"reasoning"`
-}
-
-func EvalPolicyViolation(content string) ([]PolicyEvaluation, error) {
+// sendToLLM executes the chat completion
+func sendToLLM(prompt string) ([]PolicyEvaluation, error) {
 	once.Do(func() {
 		client = openai.NewClient(openaiKey)
 	})
@@ -98,7 +114,7 @@ func EvalPolicyViolation(content string) ([]PolicyEvaluation, error) {
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,
-					Content: content,
+					Content: prompt,
 				},
 			},
 		},
