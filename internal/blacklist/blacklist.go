@@ -56,10 +56,10 @@ func init() {
 	logger.Info("Successfully initialized blacklist: " + csvPath)
 }
 
-// CheckContent checks the specified content against the compiled blacklist and returns an array
+// Match checks the specified content against the compiled blacklist and returns an array
 // of policies matched by the content. Policy matches are formatted like so: tier-policy,
 // e.g. ["0-profanity"].
-func CheckContent(content string) []string {
+func Match(content string) []string {
 	var violations []string
 
 	for category, regexList := range blacklist {
