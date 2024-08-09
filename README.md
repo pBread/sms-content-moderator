@@ -170,7 +170,7 @@ Tier 1 blacklist entries represent words that indicate a potential violation wit
 
 ### Fail with Tier 0 & Tier 1 Violations
 
-Tier 1 blacklist entries signify a content policy has been violated. Tier 1 blacklist entries will not be evaluated because it is assumed that a Tier 0 violation will trigger a total rejection.
+Tier 0 blacklist entries signify a content policy has been violated. Tier 1 blacklist entries, which signify a policy _may_ have been violated, will not be evaluated after a Tier 0 violation.
 
 ```json
 {
